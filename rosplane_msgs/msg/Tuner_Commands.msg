@@ -1,0 +1,10 @@
+float32 Va_c		# Commanded airspeed (m/s)
+float32 h_c		# Commanded altitude (m)
+float32 chi_c		# Commanded course (rad)
+float32 phi_ff		# feed forward command for orbits (rad)
+float32[4] aux		# Optional auxiliary commands
+bool aux_valid		# Auxiliary commands valid
+float32 phi_c       # Commanded roll
+float32 theta_c     # Commanded pitch
+bool hold_roll      # Set true to tune roll params
+bool hold_pitch     # Set true to tune pitch params

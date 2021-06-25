@@ -13,6 +13,7 @@ add_message_files(
   Waypoint.msg
   Controller_Internals.msg
   State.msg
+  Tuner_Commands.msg
 )
 
 generate_messages(
