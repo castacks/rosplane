@@ -86,3 +86,26 @@ add_executable(rosplane_path_planner
             src/path_planner.cpp)
 add_dependencies(rosplane_path_planner ${catkin_EXPORTED_TARGETS})
 target_link_libraries(rosplane_path_planner ${catkin_LIBRARIES})
+
+
+## Declare a C++ executable
+add_executable(rosplane_controller_tuner
+            src/tuner_base.cpp
+            src/tuner_example.cpp)
+add_dependencies(rosplane_controller_tuner ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+target_link_libraries(rosplane_controller_tuner ${catkin_LIBRARIES})
+
+# add_executable(rosplane_debugger 
+#             src/debug.cpp)   
+# add_dependencies(rosplane_debugger ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(rosplane_debugger ${catkin_LIBRARIES})
+
+# add_executable(rosplane_debugger1
+#             src/debug1.cpp)   
+# add_dependencies(rosplane_debugger1 ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(rosplane_debugger1 ${catkin_LIBRARIES})
+
+# add_executable(rosplane_debugger2 
+#             src/debug2.cpp)   
+# add_dependencies(rosplane_debugger2 ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(rosplane_debugger2 ${catkin_LIBRARIES})
