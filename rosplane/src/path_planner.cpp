@@ -11,11 +11,17 @@ int main(int argc, char **argv)
   ros::Publisher waypointPublisher = nh_.advertise<rosplane_msgs::Waypoint>("waypoint_path", 10);
 
   float Va = 12;
+  //float wps[5*num_waypoints] =
+  // {
+  //   200, 0, -50, 45*M_PI/180, Va,
+  //   0, 200, -50, 45*M_PI/180, Va,
+  //   200, 200, -50, 225*M_PI/180, Va,
+  // };
   float wps[5*num_waypoints] =
   {
-    200, 0, -50, 45*M_PI/180, Va,
-    0, 200, -50, 45*M_PI/180, Va,
-    200, 200, -50, 225*M_PI/180, Va,
+    0, -1000, -50, 0*M_PI/180, Va,
+    1000, -1000, -50, 45*M_PI/180, Va,
+    0, -1000, -50, 225*M_PI/180, Va,
   };
 
   for (int i(0); i < num_waypoints; i++)

@@ -13,7 +13,7 @@ path_manager_example::path_manager_example() : path_manager_base()
 
 void path_manager_example::manage(const params_s &params, const input_s &input, output_s &output)
 {
-
+  ROS_INFO("Managing path %d",idx_a_);
   if (num_waypoints_ < 2)
   {
     ROS_WARN_THROTTLE(4, "No waypoints received! Loitering about origin at 50m");
@@ -42,7 +42,7 @@ void path_manager_example::manage(const params_s &params, const input_s &input, 
 
 void path_manager_example::manage_line(const params_s &params, const input_s &input, output_s &output)
 {
-
+  ROS_INFO("Managing Line");
   Eigen::Vector3f p;
   p << input.pn, input.pe, -input.h;
 
@@ -97,7 +97,7 @@ void path_manager_example::manage_fillet(const params_s &params, const input_s &
     manage_line(params, input, output);
     return;
   }
-
+  ROS_INFO("Managing Fillet");
   Eigen::Vector3f p;
   p << input.pn, input.pe, -input.h;
 
@@ -176,6 +176,7 @@ void path_manager_example::manage_fillet(const params_s &params, const input_s &
 
 void path_manager_example::manage_dubins(const params_s &params, const input_s &input, output_s &output)
 {
+  ROS_INFO("Manage Dubins");
   Eigen::Vector3f p;
   p << input.pn, input.pe, -input.h;
 

@@ -62,6 +62,7 @@ void path_manager_base::new_waypoint_callback(const rosplane_msgs::Waypoint &msg
   nextwp.Va_d         = msg.Va_d;
   waypoints_.push_back(nextwp);
   num_waypoints_++;
+  ROS_INFO("Received waypoint : %d", num_waypoints_);
 }
 
 void path_manager_base::current_path_publish(const ros::TimerEvent &)
@@ -97,6 +98,7 @@ void path_manager_base::current_path_publish(const ros::TimerEvent &)
   current_path.lambda = output.lambda;
 
   current_path_pub_.publish(current_path);
+  ROS_INFO("Path Manager : published current path");
 }
 
 } //end namespace

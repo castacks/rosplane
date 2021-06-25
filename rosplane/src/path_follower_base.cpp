@@ -41,6 +41,7 @@ void path_follower_base::update(const ros::TimerEvent &)
     msg.h_c = output.h_c;
     msg.phi_ff = output.phi_ff;
     controller_commands_pub_.publish(msg);
+    ROS_INFO("Path Follower : Publishing controller commands");
   }
 }
 
