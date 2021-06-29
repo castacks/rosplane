@@ -21,18 +21,36 @@ void tuner_example::control(const params_s &params, const input_s &input, output
   output.delta_r = 0; //cooridinated_turn_hold(input.beta, params, input.Ts)
   if(input.hold_roll) {
     output.delta_a =  roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
-    ROS_INFO("Inside roll hold %f", output.delta_a);
+    // ROS_INFO("Inside roll hold %f", output.delta_a);
   }
   if(input.hold_pitch) {
     output.delta_e = pitch_hold(output.theta_c, input.theta, input.q, params, input.Ts);
-    ROS_INFO("Inside pitch hold %f", output.delta_e);
+    // ROS_INFO("Inside pitch hold %f", output.delta_e);
   } 
-
+  if(input.hold_course) {
+    output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
+    output.delta_a =  roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
+  }
   // output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
   // output.delta_a = roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
 
   // output.current_zone = current_zone;
   // output.delta_e = pitch_hold(output.theta_c, input.theta, input.q, params, input.Ts);
+
+  // Reset the errors 
+  // False means we should also reset the errors
+  if(!input.hold_roll && !input.hold_course) {
+    r_error_ = 0;
+    r_integrator = 0;
+  }
+  if(!input.hold_pitch) {
+    p_error_ = 0;
+    p_integrator_ = 0;
+  }
+  if(!input.hold_course) {
+    c_error_ = 0;
+    c_integrator_ = 0;
+  }
 }
 
 float tuner_example::course_hold(float chi_c, float chi, float phi_ff, float r, const params_s &params, float Ts)

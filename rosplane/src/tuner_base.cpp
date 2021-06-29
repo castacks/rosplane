@@ -31,8 +31,8 @@ tuner_base::tuner_base():
   nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.7329);
   nh_private_.param<double>("COURSE_KD", params_.c_kd, 0.0);
   nh_private_.param<double>("COURSE_KI", params_.c_ki, 0.0);
-  nh_private_.param<double>("ROLL_KP", params_.r_kp, 1.2855);
-  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.325);
+  nh_private_.param<double>("ROLL_KP", params_.r_kp, 30.0);
+  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.945);
   nh_private_.param<double>("ROLL_KI", params_.r_ki, 0.0);//0.10f);
   nh_private_.param<double>("PITCH_KP", params_.p_kp, 1.0);
   nh_private_.param<double>("PITCH_KD", params_.p_kd, -0.17);
@@ -146,6 +146,7 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
   // Variables added for tuning
   input.hold_roll = tuner_commands_.hold_roll;
   input.hold_pitch = tuner_commands_.hold_pitch;
+  input.hold_course =  tuner_commands_.hold_course;
 
   struct output_s output;
   output.phi_c = tuner_commands_.phi_c;

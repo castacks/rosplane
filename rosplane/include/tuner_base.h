@@ -56,6 +56,7 @@ protected:
 
     bool hold_roll;
     bool hold_pitch;
+    bool hold_course;
   };
 
   struct output_s
