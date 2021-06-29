@@ -194,6 +194,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
   switch (dub_state_)
   {
   case dubin_state::FIRST:
+    ROS_INFO("Manage DUbins : FIRST");
     dubinsParameters(waypoints_[0], waypoints_[1], params.R_min);
     output.flag = false;
     output.c[0] = dubinspath_.cs(0);
@@ -211,6 +212,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   case dubin_state::BEFORE_H1:
+    ROS_INFO("Manage Dubins : BEFORE_H1");
     output.flag = false;
     output.c[0] = dubinspath_.cs(0);
     output.c[1] = dubinspath_.cs(1);
@@ -223,6 +225,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   case dubin_state::BEFORE_H1_WRONG_SIDE:
+    ROS_INFO("Manage Dubins : BEFORE_H1_WRONG_SIDE");
     output.flag = false;
     output.c[0] = dubinspath_.cs(0);
     output.c[1] = dubinspath_.cs(1);
@@ -235,6 +238,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   case dubin_state::STRAIGHT:
+    ROS_INFO("Manage Dubins : STRAIGHT");
     output.flag = true;
     output.r[0] = dubinspath_.w1(0);
     output.r[1] = dubinspath_.w1(1);
@@ -260,6 +264,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   case dubin_state::BEFORE_H3:
+    ROS_INFO("Manage Dubins : BEFORE H3");
     output.flag = false;
     output.c[0] = dubinspath_.ce(0);
     output.c[1] = dubinspath_.ce(1);
@@ -301,6 +306,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   case dubin_state::BEFORE_H3_WRONG_SIDE:
+    ROS_INFO("Manage Dubins : BEFORE_H3_WRONG_SIDE");
     output.flag = false;
     output.c[0] = dubinspath_.ce(0);
     output.c[1] = dubinspath_.ce(1);
@@ -313,6 +319,7 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   }
+  ROS_INFO("Manage Dubins End : %d", idx_a_);
 }
 
 Eigen::Matrix3f path_manager_example::rotz(float theta)
