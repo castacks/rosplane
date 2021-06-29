@@ -1,0 +1,6 @@
+<launch>
+    <node name="debugger" pkg="rosplane" type="rosplane_debugger" output="screen" />
+    <node name="debugger1" pkg="rosplane" type="rosplane_debugger1" output="screen" />
+    <node name="debugger2" pkg="rosplane" type="rosplane_debugger2" output="screen" />
+
+</launch>
