@@ -21,17 +21,11 @@
     <!-- Load Global Parameters for this MAV -->
     <rosparam command="load" file="$(find rosplane_sim)/params/$(arg mav_name).yaml"/>
 
-    <node name="autopilot" pkg="rosplane" type="rosplane_controller" output="screen">
-      <!-- <remap from="state" to="xplane/state"/> -->
+    <node name="autopilot" pkg="rosplane" type="rosplane_controller" >
       <remap from="state" to="truth"/>
     </node>
 
-    <!-- <node name="autopilot_tuner" pkg="rosplane" type="rosplane_controller_tuner" output="screen">
-      <remap from="state" to="xplane/state"/>
-      <remap from="state" to="truth"/>
-    </node> -->
-
-    <node name="estimator" pkg="rosplane" type="rosplane_estimator" output="screen"/>
+    <node name="estimator" pkg="rosplane" type="rosplane_estimator" />
     <!-- Must publish a status: armed to estimate states -->
     <node name="status_publisher" pkg="rostopic" type="rostopic" output="screen"
       args="pub status rosflight_msgs/Status '{header: {seq: 0, stamp: 0, frame_id: 'none'},
@@ -39,20 +33,19 @@
       control_mode: 0, error_code: 0, num_errors: 0, loop_time_us: 0}'"/>
 
     <node name="pathfollower" pkg="rosplane" type="rosplane_path_follower">
-      <!-- <remap from="state" to="xplane/state"/> -->
-      <remap from="state" to="truth"/>
+       <remap from="state" to="truth"/>
     </node>
 
     <!-- <node name="current_path_publisher" pkg="rostopic" type="rostopic"
       args="pub current_path rosplane_msgs/Current_Path '0' '15.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/> -->
 
-    <node name="pathmanager" pkg="rosplane" type="rosplane_path_manager" output="screen">
-      <!-- <remap from="state" to="xplane/state"/> -->
+    <node name="pathmanager" pkg="rosplane" type="rosplane_path_manager" >
       <remap from="state" to="truth"/>
     </node>
 
-    <!-- <node name="debugger" pkg="rosplane" type="rosplane_debugger" output="screen" /> -->
-
     <node name="pathplanner" pkg="rosplane" type="rosplane_path_planner"/> 
+
+    <node name="path_visualizer" pkg="rosplane" type="path_viz.py" output="screen" />
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find rosplane)/rviz/default.rviz" />
   </group>
 </launch>
