@@ -17,7 +17,7 @@
 #include <rosplane_msgs/Tuner_Commands.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <rosplane/ControllerConfig.h>
+#include <rosplane/TunerConfig.h>
 
 namespace rosplane
 {
@@ -135,10 +135,10 @@ private:
   void tuner_commands_callback(const rosplane_msgs::Tuner_CommandsConstPtr &msg);
   bool command_recieved_;
 
-  dynamic_reconfigure::Server<rosplane::ControllerConfig> server_;
-  dynamic_reconfigure::Server<rosplane::ControllerConfig>::CallbackType func_;
+  dynamic_reconfigure::Server<rosplane::TunerConfig> server_;
+  dynamic_reconfigure::Server<rosplane::TunerConfig>::CallbackType func_;
 
-  void reconfigure_callback(rosplane::ControllerConfig &config, uint32_t level);
+  void reconfigure_callback(rosplane::TunerConfig &config, uint32_t level);
 
   /**
     * Convert from deflection angle to pwm

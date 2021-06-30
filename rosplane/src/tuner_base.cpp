@@ -82,7 +82,7 @@ void tuner_base::tuner_commands_callback(const rosplane_msgs::Tuner_CommandsCons
   tuner_commands_ = *msg;
 }
 
-void tuner_base::reconfigure_callback(rosplane::ControllerConfig &config, uint32_t level)
+void tuner_base::reconfigure_callback(rosplane::TunerConfig &config, uint32_t level)
 {
   params_.trim_e = config.TRIM_E;
   params_.trim_a = config.TRIM_A;
