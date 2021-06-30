@@ -17,8 +17,12 @@ find_package(catkin REQUIRED COMPONENTS
   rosplane_msgs
   dynamic_reconfigure
   sensor_msgs
+  visualization_msgs
 )
 find_package(Eigen3 REQUIRED)
+
+## setup for running the scripts for visualization
+##catkin_python_setup()
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -36,6 +40,7 @@ find_package(Eigen3 REQUIRED)
 
 # Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
+  cfg/Tuner.cfg
   cfg/Controller.cfg
   cfg/Follower.cfg
 )
@@ -48,6 +53,11 @@ catkin_package(
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+
+catkin_install_python(PROGRAMS 
+    scripts/path_viz.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Declare a C++ executable
 add_executable(rosplane_controller
