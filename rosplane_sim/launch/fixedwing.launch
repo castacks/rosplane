@@ -21,7 +21,7 @@
     <!-- Load Global Parameters for this MAV -->
     <rosparam command="load" file="$(find rosplane_sim)/params/$(arg mav_name).yaml"/>
 
-    <node name="autopilot" pkg="rosplane" type="rosplane_controller" >
+    <node name="autopilot" pkg="rosplane" type="rosplane_controller" output="screen">
       <remap from="state" to="truth"/>
     </node>
 
