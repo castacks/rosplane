@@ -14,6 +14,7 @@ add_message_files(
   Controller_Internals.msg
   State.msg
   Tuner_Commands.msg
+  Commanded_Values.msg
 )
 
 generate_messages(
