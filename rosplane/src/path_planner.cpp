@@ -10,19 +10,20 @@ int main(int argc, char **argv)
   ros::NodeHandle nh_;
   ros::Publisher waypointPublisher = nh_.advertise<rosplane_msgs::Waypoint>("waypoint_path", 10);
 
-  float Va = 12;
-  float wps[5*num_waypoints] =
-  {
-    200, 0, -50, 45*M_PI/180, Va,
-    0, 200, -50, 45*M_PI/180, Va,
-    200, 200, -50, 225*M_PI/180, Va,
-  };
+  float Va = 80;
   // float wps[5*num_waypoints] =
   // {
-  //   0, -1000, -50, 0*M_PI/180, Va,
-  //   1000, -1000, -50, 45*M_PI/180, Va,
-  //   0, -1000, -50, 225*M_PI/180, Va,
+  //   200, 0, -50, 45*M_PI/180, Va,
+  //   0, 200, -50, 45*M_PI/180, Va,
+  //   200, 200, -50, 225*M_PI/180, Va,
   // };
+  float wps[5*num_waypoints] =
+  {
+    0, -3000, -200, -15*M_PI/180, Va,
+    3000, -3000, -200, 45*M_PI/180, Va,
+    3000, 0, -200, 135*M_PI/180, Va,
+  };
+  // course heading is in NED frame
 
   for (int i(0); i < num_waypoints; i++)
   {
