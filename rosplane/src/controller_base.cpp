@@ -25,28 +25,28 @@ controller_base::controller_base():
   nh_private_.param<double>("ALT_TOZ", params_.alt_toz, 20.0);
   nh_private_.param<double>("ALT_HZ", params_.alt_hz, 10.0);
   nh_private_.param<double>("TAU", params_.tau, 5.0);
-  nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.7329);
-  nh_private_.param<double>("COURSE_KD", params_.c_kd, 0.0);
+  nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.9);
+  nh_private_.param<double>("COURSE_KD", params_.c_kd, -0.05);
   nh_private_.param<double>("COURSE_KI", params_.c_ki, 0.0);
-  nh_private_.param<double>("ROLL_KP", params_.r_kp, 1.2855);
-  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.325);
+  nh_private_.param<double>("ROLL_KP", params_.r_kp, 20.0);
+  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.945);
   nh_private_.param<double>("ROLL_KI", params_.r_ki, 0.0);//0.10f);
-  nh_private_.param<double>("PITCH_KP", params_.p_kp, 1.0);
-  nh_private_.param<double>("PITCH_KD", params_.p_kd, -0.17);
-  nh_private_.param<double>("PITCH_KI", params_.p_ki, 0.0);
+  nh_private_.param<double>("PITCH_KP", params_.p_kp, 15.0);
+  nh_private_.param<double>("PITCH_KD", params_.p_kd, -0.9);
+  nh_private_.param<double>("PITCH_KI", params_.p_ki, 2.0);
   nh_private_.param<double>("PITCH_FF", params_.p_ff, 0.0);
   nh_private_.param<double>("AS_PITCH_KP", params_.a_p_kp, -0.0713);
   nh_private_.param<double>("AS_PITCH_KD", params_.a_p_kd, -0.0635);
   nh_private_.param<double>("AS_PITCH_KI", params_.a_p_ki, 0.0);
-  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 3.2);
+  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 2.0);
   nh_private_.param<double>("AS_THR_KD", params_.a_t_kd, 0.0);
-  nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.0);
+  nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.2);
   nh_private_.param<double>("ALT_KP", params_.a_kp, 0.045);
   nh_private_.param<double>("ALT_KD", params_.a_kd, 0.0);
   nh_private_.param<double>("ALT_KI", params_.a_ki, 0.01);
-  nh_private_.param<double>("BETA_KP", params_.b_kp, -0.1164);
+  nh_private_.param<double>("BETA_KP", params_.b_kp, 0.0);
   nh_private_.param<double>("BETA_KD", params_.b_kd, 0.0);
-  nh_private_.param<double>("BETA_KI", params_.b_ki, -0.0037111);
+  nh_private_.param<double>("BETA_KI", params_.b_ki, 0.0);
   nh_private_.param<double>("MAX_E", params_.max_e, 0.610);
   nh_private_.param<double>("MAX_A", params_.max_a, 0.523);
   nh_private_.param<double>("MAX_R", params_.max_r, 0.523);
@@ -57,6 +57,7 @@ controller_base::controller_base():
 
   actuators_pub_ = nh_.advertise<rosflight_msgs::Command>("command", 10);
   internals_pub_ = nh_.advertise<rosplane_msgs::Controller_Internals>("controller_inners", 10);
+  commanded_values_pub_ = nh_.advertise<rosplane_msgs::Commanded_Values>("commanded_values", 10);
   act_pub_timer_ = nh_.createTimer(ros::Duration(1.0/100.0), &controller_base::actuator_controls_publish, this);
 
   command_recieved_ = false;
@@ -71,6 +72,7 @@ void controller_base::controller_commands_callback(const rosplane_msgs::Controll
 {
   command_recieved_ = true;
   controller_commands_ = *msg;
+  // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
 
 void controller_base::reconfigure_callback(rosplane::ControllerConfig &config, uint32_t level)
@@ -108,6 +110,7 @@ void controller_base::reconfigure_callback(rosplane::ControllerConfig &config, u
   params_.b_kp = config.BETA_KP;
   params_.b_kd = config.BETA_KD;
   params_.b_ki = config.BETA_KI;
+  ROS_INFO("DYNAMIC RECONFIGURE");
 }
 
 void controller_base::convert_to_pwm(controller_base::output_s &output)
@@ -133,6 +136,7 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
   input.chi_c = controller_commands_.chi_c;
   input.phi_ff = controller_commands_.phi_ff;
   input.Ts = 0.01f;
+  input.beta = vehicle_state_.beta;
 
   struct output_s output;
   if (command_recieved_ == true)
@@ -145,39 +149,48 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
     /* publish actuator controls */
 
     actuators.ignore = 0;
+    actuators.header.stamp = ros::Time::now(); // Add this time stamp so that visualizations are possible
     actuators.mode = rosflight_msgs::Command::MODE_PASS_THROUGH;
     actuators.x = output.delta_a;//(isfinite(output.delta_a)) ? output.delta_a : 0.0f;
     actuators.y = output.delta_e;//(isfinite(output.delta_e)) ? output.delta_e : 0.0f;
     actuators.z = output.delta_r;//(isfinite(output.delta_r)) ? output.delta_r : 0.0f;
     actuators.F = output.delta_t;//(isfinite(output.delta_t)) ? output.delta_t : 0.0f;
 
+    /* Publish commanded values */
+    commanded_values_.phi_c = output.phi_c;
+    commanded_values_.theta_c = output.theta_c;
+    commanded_values_.Va_c = input.Va_c;
+    commanded_values_.h_c = input.h_c;
+    commanded_values_.chi_c = controller_commands_.chi_c;
+
+    commanded_values_pub_.publish(commanded_values_);
     actuators_pub_.publish(actuators);
 
-    if (internals_pub_.getNumSubscribers() > 0)
-    {
-      rosplane_msgs::Controller_Internals inners;
-      inners.phi_c = output.phi_c;
-      inners.theta_c = output.theta_c;
-      switch (output.current_zone)
-      {
-      case alt_zones::TAKE_OFF:
-        inners.alt_zone = inners.ZONE_TAKE_OFF;
-        break;
-      case alt_zones::CLIMB:
-        inners.alt_zone = inners.ZONE_CLIMB;
-        break;
-      case alt_zones::DESCEND:
-        inners.alt_zone = inners.ZONE_DESEND;
-        break;
-      case alt_zones::ALTITUDE_HOLD:
-        inners.alt_zone = inners.ZONE_ALTITUDE_HOLD;
-        break;
-      default:
-        break;
-      }
-      inners.aux_valid = false;
-      internals_pub_.publish(inners);
-    }
+    // if (internals_pub_.getNumSubscribers() > 0)
+    // {
+    //   rosplane_msgs::Controller_Internals inners;
+    //   inners.phi_c = output.phi_c;
+    //   inners.theta_c = output.theta_c;
+    //   switch (output.current_zone)
+    //   {
+    //   case alt_zones::TAKE_OFF:
+    //     inners.alt_zone = inners.ZONE_TAKE_OFF;
+    //     break;
+    //   case alt_zones::CLIMB:
+    //     inners.alt_zone = inners.ZONE_CLIMB;
+    //     break;
+    //   case alt_zones::DESCEND:
+    //     inners.alt_zone = inners.ZONE_DESEND;
+    //     break;
+    //   case alt_zones::ALTITUDE_HOLD:
+    //     inners.alt_zone = inners.ZONE_ALTITUDE_HOLD;
+    //     break;
+    //   default:
+    //     break;
+    //   }
+    //   inners.aux_valid = false;
+    //   internals_pub_.publish(inners);
+    // }
   }
 }
 

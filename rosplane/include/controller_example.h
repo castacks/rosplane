@@ -41,10 +41,10 @@ private:
   float a_integrator_;
   float a_differentiator_;
 
-//    float cooridinated_turn_hold(float v, const struct params_s &params, float Ts);
-//    float ct_error_;
-//    float ct_integrator_;
-//    float ct_differentiator_;
+   float cooridinated_turn_hold(float v, const struct params_s &params, float Ts);
+   float ct_error_;
+   float ct_integrator_;
+   float ct_differentiator_;
 
   float sat(float value, float up_limit, float low_limit);
 };

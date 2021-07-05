@@ -14,11 +14,15 @@ controller_example::controller_example() : controller_base()
   p_error_ = 0;
   p_integrator_ = 0;
 
+  ct_error_ = 0;
+  ct_integrator_ = 0;
+  ct_differentiator_ = 0;
+
 }
 
 void controller_example::control(const params_s &params, const input_s &input, output_s &output)
 {
-  output.delta_r = 0; //cooridinated_turn_hold(input.beta, params, input.Ts)
+  output.delta_r = cooridinated_turn_hold(input.beta, params, input.Ts);
   output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
   output.delta_a = roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
 
@@ -233,11 +237,38 @@ float controller_example::altitiude_hold(float h_c, float h, const params_s &par
   return theta_c;
 }
 
-//float controller_example::cooridinated_turn_hold(float v, const params_s &params, float Ts)
-//{
-//    //todo finish this if you want...
-//    return 0;
-//}
+float controller_example::cooridinated_turn_hold(float v, const params_s &params, float Ts)
+{
+   //todo finish this if you want...
+   float beta_c = 0.0;
+   float error = beta_c - v;
+
+   ct_integrator_ = ct_integrator_ + (Ts/ 2.0)*(error + ct_error_);
+   ct_differentiator_ = (2.0*params.tau - Ts)/(2.0*params.tau + Ts)*ct_differentiator_ + (2.0 /
+                      (2.0*params.tau + Ts))*(error - ct_error_);
+
+   float up = params.b_kp*error;
+   float ui = params.b_ki*ct_integrator_;
+   float ud = params.b_kd*ct_differentiator_;
+
+   float delta_r = sat(up + ui + ud, params.max_r, -params.max_r);
+   if(fabs(params.b_ki) >= 0.00001) {
+     float delta_r_unsat = up + ui + ud;
+     ct_integrator_ = ct_integrator_ + (Ts/params.b_ki)*(delta_r - delta_r_unsat);
+   }
+
+   ct_error_ = error;
+  //  ROS_INFO("coordinated turn %f %f %f %f", delta_r, ct_error_, ct_integrator_, ct_differentiator_);
+  //  ROS_INFO("params %f %f %f", params.b_kp, params.b_kd, params.b_ki);
+   return delta_r;
+  
+  // float delta_r;
+  // if(v > 0) delta_r = -0.1;
+  // else delta_r = 0.1;
+  // delta_r = sat(delta_r, 0.09, -0.09);
+  // ROS_INFO("beta %f %f",v,delta_r );
+  // return delta_r;
+} 
 
 float controller_example::sat(float value, float up_limit, float low_limit)
 {

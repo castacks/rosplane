@@ -14,6 +14,7 @@
 #include <rosplane_msgs/State.h>
 #include <rosplane_msgs/Controller_Commands.h>
 #include <rosplane_msgs/Controller_Internals.h>
+#include <rosplane_msgs/Commanded_Values.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <rosplane/ControllerConfig.h>
@@ -52,6 +53,7 @@ protected:
     float h_c;              /** commanded altitude (m) */
     float chi_c;            /** commanded course (rad) */
     float phi_ff;           /** feed forward term for orbits (rad) */
+    float beta;             /** side slip angle (rad) */
   };
 
   struct output_s
@@ -115,10 +117,12 @@ private:
   ros::Publisher actuators_pub_;
   ros::Publisher internals_pub_;
   ros::Timer act_pub_timer_;
+  ros::Publisher commanded_values_pub_;
 
   struct params_s params_;            /**< params */
   rosplane_msgs::Controller_Commands controller_commands_;
   rosplane_msgs::State vehicle_state_;
+  rosplane_msgs::Commanded_Values commanded_values_;
 
   void vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg);
   void controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg);
