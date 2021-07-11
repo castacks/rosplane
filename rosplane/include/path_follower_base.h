@@ -79,6 +79,8 @@ private:
   void current_path_callback(const rosplane_msgs::Current_PathConstPtr &msg);
   bool current_path_init_;
 
+  int angle_in_deg_; // 1 if the angles provided in state are in degrees
+
   dynamic_reconfigure::Server<rosplane::FollowerConfig> server_;
   dynamic_reconfigure::Server<rosplane::FollowerConfig>::CallbackType func_;
   void reconfigure_callback(rosplane::FollowerConfig &config, uint32_t level);
