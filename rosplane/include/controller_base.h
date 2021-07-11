@@ -19,6 +19,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <rosplane/ControllerConfig.h>
 
+#define M_PI_F 3.14159265358979323846f
+#define M_PI_2_F 1.57079632679489661923f
+
 namespace rosplane
 {
 
@@ -54,6 +57,10 @@ protected:
     float chi_c;            /** commanded course (rad) */
     float phi_ff;           /** feed forward term for orbits (rad) */
     float beta;             /** side slip angle (rad) */
+
+    float psi;              /** Want to follow correct heading during takeoff */
+    float pn;               /* pn and pe will be handy for calculating crosstrack error during takeoff */
+    float pe;
   };
 
   struct output_s
@@ -64,6 +71,7 @@ protected:
     float delta_a;
     float delta_r;
     float delta_t;
+    float psi_c;           /* Heading angle commanded during takeoff*/ 
     alt_zones current_zone;
   };
 
@@ -71,6 +79,8 @@ protected:
   {
     double alt_hz;           /**< altitude hold zone */
     double alt_toz;          /**< altitude takeoff zone */
+    double chi_infi;         /**Vector field param to give commanded heading based on cross track error during takeoff */
+    double k_path;           /** Weight factor on error for holding yaw/course during takeoff */
     double tau;
     double c_kp;
     double c_kd;
@@ -94,6 +104,9 @@ protected:
     double b_kp;
     double b_kd;
     double b_ki;
+    double t_kp;     // P control for takeoff
+    double t_kd;     // D control for takeoff
+    double t_ki;     // I control for takeoff
     double trim_e;
     double trim_a;
     double trim_r;
@@ -108,6 +121,8 @@ protected:
   };
 
   virtual void control(const struct params_s &params, const struct input_s &input, struct output_s &output) = 0;
+  float chi_0;                    /* initial heading to account for runway and calculate cross track error*/
+  // rosplane_msgs::State vehicle_state_; 
 
 private:
   ros::NodeHandle nh_;
@@ -127,6 +142,7 @@ private:
   void vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg);
   void controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg);
   bool command_recieved_;
+  int angle_in_deg_; // 1 means angle will be in degrees and thus we would need to add a codeblock in callcack to convert angles
 
   dynamic_reconfigure::Server<rosplane::ControllerConfig> server_;
   dynamic_reconfigure::Server<rosplane::ControllerConfig>::CallbackType func_;

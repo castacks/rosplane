@@ -1,6 +1,8 @@
 #include "controller_base.h"
 #include "controller_example.h"
 
+float DEG_2_RAD = M_PI_F/180.0;
+
 namespace rosplane
 {
 
@@ -25,8 +27,8 @@ controller_base::controller_base():
   nh_private_.param<double>("ALT_TOZ", params_.alt_toz, 20.0);
   nh_private_.param<double>("ALT_HZ", params_.alt_hz, 10.0);
   nh_private_.param<double>("TAU", params_.tau, 5.0);
-  nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.9);
-  nh_private_.param<double>("COURSE_KD", params_.c_kd, -0.05);
+  nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.6);
+  nh_private_.param<double>("COURSE_KD", params_.c_kd, -0.1);
   nh_private_.param<double>("COURSE_KI", params_.c_ki, 0.0);
   nh_private_.param<double>("ROLL_KP", params_.r_kp, 20.0);
   nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.945);
@@ -35,22 +37,31 @@ controller_base::controller_base():
   nh_private_.param<double>("PITCH_KD", params_.p_kd, -0.9);
   nh_private_.param<double>("PITCH_KI", params_.p_ki, 2.0);
   nh_private_.param<double>("PITCH_FF", params_.p_ff, 0.0);
-  nh_private_.param<double>("AS_PITCH_KP", params_.a_p_kp, -0.0713);
-  nh_private_.param<double>("AS_PITCH_KD", params_.a_p_kd, -0.0635);
+  nh_private_.param<double>("AS_PITCH_KP", params_.a_p_kp, 0.05);
+  nh_private_.param<double>("AS_PITCH_KD", params_.a_p_kd, -0.07);
   nh_private_.param<double>("AS_PITCH_KI", params_.a_p_ki, 0.0);
-  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 2.0);
+  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 1.5);
   nh_private_.param<double>("AS_THR_KD", params_.a_t_kd, 0.0);
   nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.2);
   nh_private_.param<double>("ALT_KP", params_.a_kp, 0.045);
   nh_private_.param<double>("ALT_KD", params_.a_kd, 0.0);
   nh_private_.param<double>("ALT_KI", params_.a_ki, 0.01);
-  nh_private_.param<double>("BETA_KP", params_.b_kp, 0.0);
-  nh_private_.param<double>("BETA_KD", params_.b_kd, 0.0);
-  nh_private_.param<double>("BETA_KI", params_.b_ki, 0.0);
+  nh_private_.param<double>("BETA_KP", params_.b_kp, 0.8);
+  nh_private_.param<double>("BETA_KD", params_.b_kd, -2.5);
+  nh_private_.param<double>("BETA_KI", params_.b_ki, 0.15);
   nh_private_.param<double>("MAX_E", params_.max_e, 0.610);
   nh_private_.param<double>("MAX_A", params_.max_a, 0.523);
-  nh_private_.param<double>("MAX_R", params_.max_r, 0.523);
+  nh_private_.param<double>("MAX_R", params_.max_r, 1.0);
   nh_private_.param<double>("MAX_T", params_.max_t, 1.0);
+
+  nh_private_.param<double>("TAKEOFF_KP", params_.t_kp, 50.0);
+  nh_private_.param<double>("TAKEOFF_KD", params_.t_kd, 0.0);
+  nh_private_.param<double>("TAKEOFF_KI", params_.t_ki, 0.0);
+  nh_private_.param<double>("VF_CHI_INFI", params_.chi_infi, 1.5708);
+  nh_private_.param<double>("TAKEOFF_KPATH", params_.k_path, 1.0);
+
+  nh_private_.param<int>("ANGLE_IN_DEG", angle_in_deg_, 1);
+  ROS_INFO("angle_in_deg_ %d", angle_in_deg_);
 
   func_ = boost::bind(&controller_base::reconfigure_callback, this, _1, _2);
   server_.setCallback(func_);
@@ -61,17 +72,31 @@ controller_base::controller_base():
   act_pub_timer_ = nh_.createTimer(ros::Duration(1.0/100.0), &controller_base::actuator_controls_publish, this);
 
   command_recieved_ = false;
+
+  chi_0 = -360.0; // initialize chi_0 to an absurd value; chi will be given in radians
 }
 
 void controller_base::vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg)
 {
   vehicle_state_ = *msg;
+  if(angle_in_deg_) {
+    vehicle_state_.alpha = vehicle_state_.alpha * DEG_2_RAD;
+    vehicle_state_.beta = vehicle_state_.beta * DEG_2_RAD;
+    vehicle_state_.phi = vehicle_state_.phi * DEG_2_RAD;
+    vehicle_state_.theta = vehicle_state_.theta * DEG_2_RAD;
+    vehicle_state_.psi = vehicle_state_.psi * DEG_2_RAD; 
+    vehicle_state_.chi =vehicle_state_.chi * DEG_2_RAD;
+  }
+  if(chi_0 < -M_PI_F) chi_0 = vehicle_state_.chi; // since the aircraft is on the ground; chi = psi
 }
 
 void controller_base::controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg)
 {
   command_recieved_ = true;
   controller_commands_ = *msg;
+  if(angle_in_deg_) {
+    controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
+  }
   // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
 
@@ -110,6 +135,13 @@ void controller_base::reconfigure_callback(rosplane::ControllerConfig &config, u
   params_.b_kp = config.BETA_KP;
   params_.b_kd = config.BETA_KD;
   params_.b_ki = config.BETA_KI;
+
+  params_.t_kp = config.TAKEOFF_KP;
+  params_.t_kd = config.TAKEOFF_KD;
+  params_.t_ki = config.TAKEOFF_KI;
+
+  params_.chi_infi = config.TAKEOFF_VF_CHI_INFI;
+  params_.k_path = config.TAKEOFF_KPATH;
   ROS_INFO("DYNAMIC RECONFIGURE");
 }
 
@@ -138,6 +170,11 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
   input.Ts = 0.01f;
   input.beta = vehicle_state_.beta;
 
+  // Values required for proper takeoff; pn and pe can be used for cross-track error
+  input.psi = vehicle_state_.psi;      
+  input.pn = vehicle_state_.position[0];
+  input.pe = vehicle_state_.position[1];
+
   struct output_s output;
   if (command_recieved_ == true)
   {
@@ -156,12 +193,22 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
     actuators.z = output.delta_r;//(isfinite(output.delta_r)) ? output.delta_r : 0.0f;
     actuators.F = output.delta_t;//(isfinite(output.delta_t)) ? output.delta_t : 0.0f;
 
-    /* Publish commanded values */
+    /* Publish commanded values for the purpose of visualization*/
     commanded_values_.phi_c = output.phi_c;
     commanded_values_.theta_c = output.theta_c;
     commanded_values_.Va_c = input.Va_c;
     commanded_values_.h_c = input.h_c;
     commanded_values_.chi_c = controller_commands_.chi_c;
+    commanded_values_.psi_c = output.psi_c;
+    commanded_values_.chi_0 = chi_0;
+
+    if(angle_in_deg_) {
+      commanded_values_.phi_c = commanded_values_.phi_c * 1/DEG_2_RAD;
+      commanded_values_.theta_c = commanded_values_.theta_c * 1/DEG_2_RAD;
+      commanded_values_.chi_c = commanded_values_.chi_c * 1/DEG_2_RAD;
+      commanded_values_.psi_c = commanded_values_.psi_c * 1/DEG_2_RAD;
+      commanded_values_.chi_0 = commanded_values_.chi_0 * 1/DEG_2_RAD;
+    }
 
     commanded_values_pub_.publish(commanded_values_);
     actuators_pub_.publish(actuators);
