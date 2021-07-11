@@ -88,6 +88,8 @@ private:
   bool state_init_;
   void new_waypoint_callback(const rosplane_msgs::Waypoint &msg);
   void current_path_publish(const ros::TimerEvent &);
+
+  int angle_in_deg_;
 };
 } //end namespace
 #endif // PATH_MANAGER_BASE_H

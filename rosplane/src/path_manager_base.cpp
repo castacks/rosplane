@@ -1,6 +1,9 @@
 #include "path_manager_base.h"
 #include "path_manager_example.h"
 
+#define M_PI_F 3.14159265358979323846f
+float DEG_2_RAD = M_PI_F/180.0;
+
 namespace rosplane
 {
 
@@ -10,6 +13,7 @@ path_manager_base::path_manager_base():
 {
   nh_private_.param<double>("R_min", params_.R_min, 300);
   nh_private_.param<double>("update_rate", update_rate_, 10.0);
+  nh_private_.param<int>("ANGLE_IN_DEG", angle_in_deg_, 1);
 
   vehicle_state_sub_ = nh_.subscribe("state", 10, &path_manager_base::vehicle_state_callback, this);
   new_waypoint_sub_ = nh_.subscribe("waypoint_path", 10, &path_manager_base::new_waypoint_callback, this);
@@ -25,6 +29,14 @@ path_manager_base::path_manager_base():
 void path_manager_base::vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg)
 {
   vehicle_state_ = *msg;
+  if(angle_in_deg_) {
+    vehicle_state_.alpha = vehicle_state_.alpha * DEG_2_RAD;
+    vehicle_state_.beta = vehicle_state_.beta * DEG_2_RAD;
+    vehicle_state_.phi = vehicle_state_.phi * DEG_2_RAD;
+    vehicle_state_.theta = vehicle_state_.theta * DEG_2_RAD;
+    vehicle_state_.psi = vehicle_state_.psi * DEG_2_RAD; 
+    vehicle_state_.chi =vehicle_state_.chi * DEG_2_RAD;
+  }
 
   state_init_ = true;
 }
