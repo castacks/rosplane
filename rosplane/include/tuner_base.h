@@ -135,6 +135,8 @@ private:
   void tuner_commands_callback(const rosplane_msgs::Tuner_CommandsConstPtr &msg);
   bool command_recieved_;
 
+  int angle_in_deg_;
+
   dynamic_reconfigure::Server<rosplane::TunerConfig> server_;
   dynamic_reconfigure::Server<rosplane::TunerConfig>::CallbackType func_;
 

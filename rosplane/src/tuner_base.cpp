@@ -1,6 +1,9 @@
 #include "tuner_base.h"
 #include "tuner_example.h"
 
+#define M_PI_F 3.14159265358979323846f
+#define DEG_2_RAD M_PI_F/180.0
+
 namespace rosplane
 {
 
@@ -63,11 +66,20 @@ tuner_base::tuner_base():
   act_pub_timer_ = nh_.createTimer(ros::Duration(1.0/100.0), &tuner_base::actuator_controls_publish, this);
 
   command_recieved_ = false;
+  angle_in_deg_ = 1;
 }
 
 void tuner_base::vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg)
 {
   vehicle_state_ = *msg;
+  if(angle_in_deg_) {
+    vehicle_state_.alpha = vehicle_state_.alpha * DEG_2_RAD;
+    vehicle_state_.beta = vehicle_state_.beta * DEG_2_RAD;
+    vehicle_state_.phi = vehicle_state_.phi * DEG_2_RAD;
+    vehicle_state_.theta = vehicle_state_.theta * DEG_2_RAD;
+    vehicle_state_.psi = vehicle_state_.psi * DEG_2_RAD; 
+    vehicle_state_.chi =vehicle_state_.chi * DEG_2_RAD;
+  }
 }
 
 void tuner_base::controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg)
@@ -80,6 +92,11 @@ void tuner_base::tuner_commands_callback(const rosplane_msgs::Tuner_CommandsCons
 {
   command_recieved_ = true;
   tuner_commands_ = *msg;
+  if(angle_in_deg_) {
+    tuner_commands_.phi_c = tuner_commands_.phi_c * DEG_2_RAD;
+    tuner_commands_.theta_c = tuner_commands_.theta_c * DEG_2_RAD;
+    tuner_commands_.chi_c = tuner_commands_.chi_c * DEG_2_RAD;
+  }
 }
 
 void tuner_base::reconfigure_callback(rosplane::TunerConfig &config, uint32_t level)
