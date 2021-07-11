@@ -41,10 +41,14 @@ private:
   float a_integrator_;
   float a_differentiator_;
 
-   float cooridinated_turn_hold(float v, const struct params_s &params, float Ts);
-   float ct_error_;
-   float ct_integrator_;
-   float ct_differentiator_;
+  float cooridinated_turn_hold(float v, const struct params_s &params, float Ts);
+  float ct_error_;
+  float ct_integrator_;
+  float ct_differentiator_;
+
+  float takeoff_path_hold(float psi_c, float psi, float r, const struct params_s &params, float Ts);
+  float t_error_;
+  float t_integrator_;
 
   float sat(float value, float up_limit, float low_limit);
 };
