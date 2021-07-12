@@ -43,7 +43,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     if(input.va < 25) output.theta_c = 0.0 * 3.14/180.0; // takeoff only when speed is good
 
     output.delta_r = takeoff_path_hold(output.psi_c, input.psi, input.r, params, input.Ts);
-    ROS_INFO("tAKING OFF %f, %f", output.delta_r, output.theta_c);
+    ROS_INFO("TAKING OFF %f, %f", output.delta_r, output.theta_c);
 
     if (input.h >= params.alt_toz)
     {
@@ -294,8 +294,8 @@ float controller_example::takeoff_path_hold(float psi_c, float psi, float r, con
   float up = params.t_kp*error;
   float ui = params.t_ki*t_integrator_;
   float ud = params.t_kd*r;
-  ROS_INFO("%f %f %f %f", error, params.t_kp, params.t_ki, params.t_kd);
-  float delta_r = sat(up + ui + ud, params.max_r, -params.max_r);
+  ROS_INFO("%f", params.t_r_ff);
+  float delta_r = sat(up + ui + ud + params.t_r_ff, params.max_r, -params.max_r);
   if (fabs(params.t_ki) >= 0.00001)
   {
     float delta_r_unsat = up + ui + ud;

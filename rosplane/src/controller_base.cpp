@@ -54,9 +54,10 @@ controller_base::controller_base():
   nh_private_.param<double>("MAX_R", params_.max_r, 1.0);
   nh_private_.param<double>("MAX_T", params_.max_t, 1.0);
 
-  nh_private_.param<double>("TAKEOFF_KP", params_.t_kp, 50.0);
-  nh_private_.param<double>("TAKEOFF_KD", params_.t_kd, 0.0);
+  nh_private_.param<double>("TAKEOFF_KP", params_.t_kp, 10.0);
+  nh_private_.param<double>("TAKEOFF_KD", params_.t_kd, -0.1);
   nh_private_.param<double>("TAKEOFF_KI", params_.t_ki, 0.0);
+  nh_private_.param<double>("TAKEOFF_R_FF", params_.t_r_ff, 0.1);
   nh_private_.param<double>("VF_CHI_INFI", params_.chi_infi, 1.5708);
   nh_private_.param<double>("TAKEOFF_KPATH", params_.k_path, 1.0);
 
@@ -197,7 +198,7 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
     commanded_values_.phi_c = output.phi_c;
     commanded_values_.theta_c = output.theta_c;
     commanded_values_.Va_c = input.Va_c;
-    commanded_values_.h_c = input.h_c;
+    commanded_values_.h_c = -input.h_c;                 // Easier to understand since position is in NED
     commanded_values_.chi_c = controller_commands_.chi_c;
     commanded_values_.psi_c = output.psi_c;
     commanded_values_.chi_0 = chi_0;

@@ -107,6 +107,7 @@ protected:
     double t_kp;     // P control for takeoff
     double t_kd;     // D control for takeoff
     double t_ki;     // I control for takeoff
+    double t_r_ff;   // Feed forward turn for rudder 
     double trim_e;
     double trim_a;
     double trim_r;
