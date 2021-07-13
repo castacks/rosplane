@@ -39,7 +39,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     output.phi_c = 0;
     output.delta_a = roll_hold(0.0, input.phi, input.p, params, input.Ts);
     output.delta_t = params.max_t;
-    output.theta_c = 15.0*3.14/180.0;
+    output.theta_c = 5.0*3.14/180.0;
     if(input.va < 25) output.theta_c = 0.0 * 3.14/180.0; // takeoff only when speed is good
 
     output.delta_r = takeoff_path_hold(output.psi_c, input.psi, input.r, params, input.Ts);
@@ -130,7 +130,7 @@ float controller_example::course_hold(float chi_c, float chi, float phi_ff, floa
   float ui = params.c_ki*c_integrator_;
   float ud = params.c_kd*r;
 
-  float phi_c = sat(up + ui + ud + phi_ff, 40.0*3.14/180.0, -40.0*3.14/180.0);
+  float phi_c = sat(up + ui + ud + phi_ff, 30.0*3.14/180.0, -30.0*3.14/180.0);
   if (fabs(params.c_ki) >= 0.00001)
   {
     float phi_c_unsat = up + ui + ud + phi_ff;
@@ -195,7 +195,7 @@ float controller_example::airspeed_with_pitch_hold(float Va_c, float Va, const p
   float ui = params.a_p_ki*ap_integrator_;
   float ud = params.a_p_kd*ap_differentiator_;
 
-  float theta_c = sat(up + ui + ud, 20.0*3.14/180.0, -25.0*3.14/180.0);
+  float theta_c = sat(up + ui + ud, 15.0*3.14/180.0, -15.0*3.14/180.0);
   if (fabs(params.a_p_ki) >= 0.00001)
   {
     float theta_c_unsat = up + ui + ud;
@@ -241,7 +241,7 @@ float controller_example::altitiude_hold(float h_c, float h, const params_s &par
   float ui = params.a_ki*a_integrator_;
   float ud = params.a_kd*a_differentiator_;
 
-  float theta_c = sat(up + ui + ud, 35.0*3.14/180.0, -35.0*3.14/180.0);
+  float theta_c = sat(up + ui + ud, 15.0*3.14/180.0, -15.0*3.14/180.0);
   if (fabs(params.a_ki) >= 0.00001)
   {
     float theta_c_unsat = up + ui + ud;
