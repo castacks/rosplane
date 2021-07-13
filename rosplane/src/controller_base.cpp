@@ -25,17 +25,17 @@ controller_base::controller_base():
   nh_private_.param<double>("PWM_RAD_A", params_.pwm_rad_a, 1.0);
   nh_private_.param<double>("PWM_RAD_R", params_.pwm_rad_r, 1.0);
   nh_private_.param<double>("ALT_TOZ", params_.alt_toz, 20.0);
-  nh_private_.param<double>("ALT_HZ", params_.alt_hz, 10.0);
+  nh_private_.param<double>("ALT_HZ", params_.alt_hz, 15.0);
   nh_private_.param<double>("TAU", params_.tau, 5.0);
   nh_private_.param<double>("COURSE_KP", params_.c_kp, 0.6);
   nh_private_.param<double>("COURSE_KD", params_.c_kd, -0.1);
   nh_private_.param<double>("COURSE_KI", params_.c_ki, 0.0);
-  nh_private_.param<double>("ROLL_KP", params_.r_kp, 20.0);
-  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.945);
+  nh_private_.param<double>("ROLL_KP", params_.r_kp, 2.5); // 10.0 for aggressive
+  nh_private_.param<double>("ROLL_KD", params_.r_kd, -0.92); // -0.92 for aggressive
   nh_private_.param<double>("ROLL_KI", params_.r_ki, 0.0);//0.10f);
-  nh_private_.param<double>("PITCH_KP", params_.p_kp, 15.0);
-  nh_private_.param<double>("PITCH_KD", params_.p_kd, -0.9);
-  nh_private_.param<double>("PITCH_KI", params_.p_ki, 2.0);
+  nh_private_.param<double>("PITCH_KP", params_.p_kp, 10.0);
+  nh_private_.param<double>("PITCH_KD", params_.p_kd, -2.0);
+  nh_private_.param<double>("PITCH_KI", params_.p_ki, 5.0);
   nh_private_.param<double>("PITCH_FF", params_.p_ff, 0.0);
   nh_private_.param<double>("AS_PITCH_KP", params_.a_p_kp, 0.05);
   nh_private_.param<double>("AS_PITCH_KD", params_.a_p_kd, -0.07);
@@ -43,9 +43,9 @@ controller_base::controller_base():
   nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 1.5);
   nh_private_.param<double>("AS_THR_KD", params_.a_t_kd, 0.0);
   nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.2);
-  nh_private_.param<double>("ALT_KP", params_.a_kp, 0.045);
-  nh_private_.param<double>("ALT_KD", params_.a_kd, 0.0);
-  nh_private_.param<double>("ALT_KI", params_.a_ki, 0.01);
+  nh_private_.param<double>("ALT_KP", params_.a_kp, 0.03);
+  nh_private_.param<double>("ALT_KD", params_.a_kd, -0.00005);
+  nh_private_.param<double>("ALT_KI", params_.a_ki, 0.003);
   nh_private_.param<double>("BETA_KP", params_.b_kp, 0.8);
   nh_private_.param<double>("BETA_KD", params_.b_kd, -2.5);
   nh_private_.param<double>("BETA_KI", params_.b_ki, 0.15);
@@ -54,7 +54,7 @@ controller_base::controller_base():
   nh_private_.param<double>("MAX_R", params_.max_r, 1.0);
   nh_private_.param<double>("MAX_T", params_.max_t, 1.0);
 
-  nh_private_.param<double>("TAKEOFF_KP", params_.t_kp, 10.0);
+  nh_private_.param<double>("TAKEOFF_KP", params_.t_kp, 5.0);
   nh_private_.param<double>("TAKEOFF_KD", params_.t_kd, -0.1);
   nh_private_.param<double>("TAKEOFF_KI", params_.t_ki, 0.0);
   nh_private_.param<double>("TAKEOFF_R_FF", params_.t_r_ff, 0.1);
