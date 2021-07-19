@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
  float wps[5*num_waypoints] = 
   {
-    -1877, -5698, -200, -80*M_PI/180 + CHI_0, Va,
+    -2162, -5604, -200, -80*M_PI/180 + CHI_0, Va,
     -6626, -4134.81, -200, -170*M_PI/180 + CHI_0, Va,
     -2871, 7263, -200, 100*M_PI/180 + CHI_0, Va,
     1877, 5698, -200, 10*M_PI/180 + CHI_0, Va
