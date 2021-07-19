@@ -9,3 +9,4 @@ float32 theta_c     # Commanded pitch
 bool hold_roll      # Set true to tune roll params
 bool hold_pitch     # Set true to tune pitch params
 bool hold_course    # Set true to tune course params
+bool hold_altitude  # Set true to tune altitude params
