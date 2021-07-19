@@ -15,6 +15,7 @@
 #include <rosplane_msgs/Controller_Commands.h>
 #include <rosplane_msgs/Controller_Internals.h>
 #include <rosplane_msgs/Tuner_Commands.h>
+#include <rosplane_msgs/Commanded_Values.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <rosplane/TunerConfig.h>
@@ -57,6 +58,7 @@ protected:
     bool hold_roll;
     bool hold_pitch;
     bool hold_course;
+    bool hold_altitude;
   };
 
   struct output_s
@@ -124,11 +126,16 @@ private:
   // Tuner commands subscriber
   ros::Subscriber tuner_commands_sub_;
 
+  // Publish commanded values
+  ros::Publisher commanded_values_pub_;
+
+
   struct params_s params_;            /**< params */
   rosplane_msgs::Controller_Commands controller_commands_;
   rosplane_msgs::State vehicle_state_;
 
   rosplane_msgs::Tuner_Commands tuner_commands_;
+  rosplane_msgs::Commanded_Values commanded_values_;
 
   void vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg);
   void controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg);

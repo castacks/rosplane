@@ -2,7 +2,7 @@
 #include "tuner_example.h"
 
 #define M_PI_F 3.14159265358979323846f
-#define DEG_2_RAD M_PI_F/180.0
+float DEG_2_RAD = M_PI_F/180.0;
 
 namespace rosplane
 {
@@ -64,6 +64,7 @@ tuner_base::tuner_base():
   actuators_pub_ = nh_.advertise<rosflight_msgs::Command>("command", 10);
   internals_pub_ = nh_.advertise<rosplane_msgs::Controller_Internals>("controller_inners", 10);
   act_pub_timer_ = nh_.createTimer(ros::Duration(1.0/100.0), &tuner_base::actuator_controls_publish, this);
+  commanded_values_pub_ = nh_.advertise<rosplane_msgs::Commanded_Values>("commanded_values", 10);
 
   command_recieved_ = false;
   angle_in_deg_ = 1;
@@ -164,6 +165,7 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
   input.hold_roll = tuner_commands_.hold_roll;
   input.hold_pitch = tuner_commands_.hold_pitch;
   input.hold_course =  tuner_commands_.hold_course;
+  input.hold_altitude = tuner_commands_.hold_altitude;
 
   struct output_s output;
   output.phi_c = tuner_commands_.phi_c;
@@ -187,6 +189,29 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
     actuators.F = output.delta_t;//(isfinite(output.delta_t)) ? output.delta_t : 0.0f;
 
     actuators_pub_.publish(actuators);
+
+    commanded_values_.phi_c = output.phi_c;
+    commanded_values_.theta_c = output.theta_c;
+    commanded_values_.Va_c = input.Va_c;
+    commanded_values_.h_c = -input.h_c;                 // Easier to understand since position is in NED
+    commanded_values_.chi_c = tuner_commands_.chi_c;
+    // commanded_values_.psi_c = output.psi_c;
+    // commanded_values_.chi_0 = chi_0;
+
+    if(angle_in_deg_) {
+      // ROS_INFO("Converting angle to degrees");
+      // std::cout<<commanded_values_.theta_c<<" ";
+
+      commanded_values_.phi_c = commanded_values_.phi_c * 1/DEG_2_RAD;
+      commanded_values_.theta_c = commanded_values_.theta_c * 1/DEG_2_RAD;
+      commanded_values_.chi_c = commanded_values_.chi_c * 1/DEG_2_RAD;
+      // commanded_values_.psi_c = commanded_values_.psi_c * 1/DEG_2_RAD;
+      // commanded_values_.chi_0 = commanded_values_.chi_0 * 1/DEG_2_RAD;
+      
+      // std::cout<<commanded_values_.theta_c<<"\n";
+    }
+
+    commanded_values_pub_.publish(commanded_values_);
 
     // if (internals_pub_.getNumSubscribers() > 0)
     // {

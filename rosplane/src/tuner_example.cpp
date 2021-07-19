@@ -31,6 +31,12 @@ void tuner_example::control(const params_s &params, const input_s &input, output
     output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
     output.delta_a =  roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
   }
+  if(input.hold_altitude) {
+    ROS_INFO("ALTITUDE HOLD");
+    output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
+    output.theta_c = altitiude_hold(input.h_c, input.h, params, input.Ts);
+    output.delta_e = pitch_hold(output.theta_c, input.theta, input.q, params, input.Ts);
+  }
   // output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
   // output.delta_a = roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
 
@@ -51,6 +57,15 @@ void tuner_example::control(const params_s &params, const input_s &input, output
     c_error_ = 0;
     c_integrator_ = 0;
   }
+  if(!input.hold_altitude) {
+    a_error_ = 0;
+    a_integrator_ = 0;
+    a_differentiator_ = 0;
+
+    at_error_ = 0;
+    at_integrator_ = 0;
+    at_differentiator_ = 0;
+  }
 }
 
 float tuner_example::course_hold(float chi_c, float chi, float phi_ff, float r, const params_s &params, float Ts)
@@ -63,7 +78,7 @@ float tuner_example::course_hold(float chi_c, float chi, float phi_ff, float r, 
   float ui = params.c_ki*c_integrator_;
   float ud = params.c_kd*r;
 
-  float phi_c = sat(up + ui + ud + phi_ff, 40.0*3.14/180.0, -40.0*3.14/180.0);
+  float phi_c = sat(up + ui + ud + phi_ff, 30.0*3.14/180.0, -30.0*3.14/180.0);
   if (fabs(params.c_ki) >= 0.00001)
   {
     float phi_c_unsat = up + ui + ud + phi_ff;
@@ -113,6 +128,7 @@ float tuner_example::pitch_hold(float theta_c, float theta, float q, const param
   }
 
   p_error_ = error;
+  ROS_INFO("%f, %f", error, p_integrator_);
   return delta_e;
 }
 
@@ -128,7 +144,7 @@ float tuner_example::airspeed_with_pitch_hold(float Va_c, float Va, const params
   float ui = params.a_p_ki*ap_integrator_;
   float ud = params.a_p_kd*ap_differentiator_;
 
-  float theta_c = sat(up + ui + ud, 20.0*3.14/180.0, -25.0*3.14/180.0);
+  float theta_c = sat(up + ui + ud, 10.0*3.14/180.0, -10.0*3.14/180.0);
   if (fabs(params.a_p_ki) >= 0.00001)
   {
     float theta_c_unsat = up + ui + ud;
@@ -174,7 +190,7 @@ float tuner_example::altitiude_hold(float h_c, float h, const params_s &params, 
   float ui = params.a_ki*a_integrator_;
   float ud = params.a_kd*a_differentiator_;
 
-  float theta_c = sat(up + ui + ud, 35.0*3.14/180.0, -35.0*3.14/180.0);
+  float theta_c = sat(up + ui + ud, 10.0*3.14/180.0, -10.0*3.14/180.0);
   if (fabs(params.a_ki) >= 0.00001)
   {
     float theta_c_unsat = up + ui + ud;
@@ -182,6 +198,8 @@ float tuner_example::altitiude_hold(float h_c, float h, const params_s &params, 
   }
 
   at_error_ = error;
+  ROS_INFO("%f, %f", error, a_integrator_);
+  // ROS_INFO("Altitude hold error : %f \n up : %f, ud : %f, ui : %f \n theta_c : %f", error, up, ud, ui, theta_c);
   return theta_c;
 }
 
