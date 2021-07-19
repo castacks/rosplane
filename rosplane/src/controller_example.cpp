@@ -21,6 +21,7 @@ controller_example::controller_example() : controller_base()
   t_error_ = 0;
   t_integrator_ = 0;
 
+  throttle_ramp_ = 0.0; // only for the purpose of takeoff
 }
 
 void controller_example::control(const params_s &params, const input_s &input, output_s &output)
@@ -38,7 +39,17 @@ void controller_example::control(const params_s &params, const input_s &input, o
   case alt_zones::TAKE_OFF:
     output.phi_c = 0;
     output.delta_a = roll_hold(0.0, input.phi, input.p, params, input.Ts);
-    output.delta_t = params.max_t;
+
+    if(throttle_ramp_<=0.5) {
+      throttle_ramp_ += 0.001;
+    }
+    else {
+      throttle_ramp_ += 0.001;
+    }
+
+    throttle_ramp_ = sat(throttle_ramp_, params.max_t, 0.0);
+    output.delta_t =  throttle_ramp_;
+    // output.delta_t = params.max_t;
     output.theta_c = 5.0*3.14/180.0;
     if(input.va < 25) output.theta_c = 0.0 * 3.14/180.0; // takeoff only when speed is good
 
@@ -241,7 +252,7 @@ float controller_example::altitiude_hold(float h_c, float h, const params_s &par
   float ui = params.a_ki*a_integrator_;
   float ud = params.a_kd*a_differentiator_;
 
-  float theta_c = sat(up + ui + ud, 15.0*3.14/180.0, -15.0*3.14/180.0);
+  float theta_c = sat(up + ui + ud, 5.0*3.14/180.0, -5.0*3.14/180.0); // change max and min from +- 15 to 5 degrees
   if (fabs(params.a_ki) >= 0.00001)
   {
     float theta_c_unsat = up + ui + ud;
