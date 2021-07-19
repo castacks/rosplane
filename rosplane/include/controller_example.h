@@ -51,6 +51,7 @@ private:
   float t_integrator_;
 
   float sat(float value, float up_limit, float low_limit);
+  float throttle_ramp_;
 };
 } //end namespace
 
