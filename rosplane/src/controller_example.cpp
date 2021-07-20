@@ -259,7 +259,7 @@ float controller_example::altitiude_hold(float h_c, float h, const params_s &par
     a_integrator_ = a_integrator_ + (Ts/params.a_ki)*(theta_c - theta_c_unsat);
   }
 
-  at_error_ = error;
+  a_error_ = error;
   return theta_c;
 }
 
