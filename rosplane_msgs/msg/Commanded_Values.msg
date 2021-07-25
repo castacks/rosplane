@@ -5,3 +5,4 @@ float32 h_c                # Commanded altitude
 float32 chi_c              # Commanded course
 float32 psi_c              # Commanded heading during takeoff
 float32 chi_0              # Initial heading in runway
+float32 vh_c               # Commanded Vertical Velocity

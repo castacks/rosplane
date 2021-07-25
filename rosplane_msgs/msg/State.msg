@@ -18,6 +18,7 @@ float32 r		# Body frame yawrate (rad/s)
 float32 Vg		# Groundspeed (m/s)
 float32 wn		# Windspeed north component (m/s)
 float32 we		# Windspeed east component (m/s)
+float32 vh      # Vertical velocity (m/s)
 
 # Additional States for convenience
 float32[4] quat		# Quaternion (wxyz, NED)
