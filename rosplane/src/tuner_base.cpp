@@ -53,6 +53,9 @@ tuner_base::tuner_base():
   nh_private_.param<double>("BETA_KP", params_.b_kp, -0.1164);
   nh_private_.param<double>("BETA_KD", params_.b_kd, 0.0);
   nh_private_.param<double>("BETA_KI", params_.b_ki, -0.0037111);
+  nh_private_.param<double>("VH_KP", params_.vh_kp, 0.001);          // params for Vertical rate hold
+  nh_private_.param<double>("VH_KD", params_.vh_kd, 0.0);
+  nh_private_.param<double>("VH_KI", params_.vh_ki, 0.0);
   nh_private_.param<double>("MAX_E", params_.max_e, 0.610);
   nh_private_.param<double>("MAX_A", params_.max_a, 0.523);
   nh_private_.param<double>("MAX_R", params_.max_r, 0.523);
@@ -135,6 +138,10 @@ void tuner_base::reconfigure_callback(rosplane::TunerConfig &config, uint32_t le
   params_.b_kp = config.BETA_KP;
   params_.b_kd = config.BETA_KD;
   params_.b_ki = config.BETA_KI;
+
+  params_.vh_kp = config.VH_KP;
+  params_.vh_kd = config.VH_KD;
+  params_.vh_ki = config.VH_KI;
 }
 
 void tuner_base::convert_to_pwm(tuner_base::output_s &output)
@@ -160,12 +167,15 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
   input.chi_c = tuner_commands_.chi_c;
   input.phi_ff = tuner_commands_.phi_ff;
   input.Ts = 0.01f;
+  input.vh = vehicle_state_.vh;
+  input.vh_c = tuner_commands_.vh_c;
 
   // Variables added for tuning
   input.hold_roll = tuner_commands_.hold_roll;
   input.hold_pitch = tuner_commands_.hold_pitch;
   input.hold_course =  tuner_commands_.hold_course;
   input.hold_altitude = tuner_commands_.hold_altitude;
+  input.hold_vh = tuner_commands_.hold_vh;
 
   struct output_s output;
   output.phi_c = tuner_commands_.phi_c;
@@ -195,6 +205,7 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
     commanded_values_.Va_c = input.Va_c;
     commanded_values_.h_c = -input.h_c;                 // Easier to understand since position is in NED
     commanded_values_.chi_c = tuner_commands_.chi_c;
+    commanded_values_.vh_c = tuner_commands_.vh_c;
     // commanded_values_.psi_c = output.psi_c;
     // commanded_values_.chi_0 = chi_0;
 

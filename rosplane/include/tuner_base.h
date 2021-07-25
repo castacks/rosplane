@@ -54,11 +54,14 @@ protected:
     float h_c;              /** commanded altitude (m) */
     float chi_c;            /** commanded course (rad) */
     float phi_ff;           /** feed forward term for orbits (rad) */
+    float vh;               /** vertical velocity ; up is positive*/
+    float vh_c;             /** commanded rate of ascent (+ve is up) */
 
     bool hold_roll;
     bool hold_pitch;
     bool hold_course;
     bool hold_altitude;
+    bool hold_vh;
   };
 
   struct output_s
@@ -110,6 +113,9 @@ protected:
     double pwm_rad_e;
     double pwm_rad_a;
     double pwm_rad_r;
+    double vh_kp; // PID params for vertical velocity 
+    double vh_kd; // PID params for vertical velocity
+    double vh_ki; // PID paramns for certical velocity
   };
 
   virtual void control(const struct params_s &params, const struct input_s &input, struct output_s &output) = 0;
