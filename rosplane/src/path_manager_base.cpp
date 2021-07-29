@@ -11,7 +11,7 @@ path_manager_base::path_manager_base():
   nh_(ros::NodeHandle()), /** nh_ stuff added here */
   nh_private_(ros::NodeHandle("~"))
 {
-  nh_private_.param<double>("R_min", params_.R_min, 300);
+  nh_private_.param<double>("R_min", params_.R_min, 450);
   nh_private_.param<double>("update_rate", update_rate_, 10.0);
   nh_private_.param<int>("ANGLE_IN_DEG", angle_in_deg_, 1);
 
