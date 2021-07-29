@@ -3,6 +3,7 @@
 
 <launch>
     <arg name="mav_name"            default="fixedwing"/>
+    <arg name="open_reconfigure"    default="true" />
   
     <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch">
       <arg name="paused" value="true"/>
@@ -55,5 +56,9 @@
   
       <node name="pathplanner" pkg="rosplane" type="rosplane_path_planner"/> 
       <node name = "my_rqt_dashboard" pkg = "rqt_gui" type = "rqt_gui" respawn = "false" output = "screen" args = "--perspective-file $(find rosplane)/rqt_config/control_viz.perspective"/>
+    </group>
+
+    <group if="$(arg open_reconfigure)">
+      <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rosplane_rqt_reconfigure" args="[/fixedwing/pathfollower,/fixedwing/autopilot]" />
     </group>
   </launch>
