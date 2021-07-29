@@ -167,8 +167,8 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
   input.chi_c = tuner_commands_.chi_c;
   input.phi_ff = tuner_commands_.phi_ff;
   input.Ts = 0.01f;
-  input.vh = vehicle_state_.vh;
-  input.vh_c = tuner_commands_.vh_c;
+  input.vh = vehicle_state_.vh * 0.305/60.0;
+  input.vh_c = tuner_commands_.vh_c * 0.305/60.0;
 
   // Variables added for tuning
   input.hold_roll = tuner_commands_.hold_roll;
