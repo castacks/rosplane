@@ -12,3 +12,4 @@ bool hold_pitch     # Set true to tune pitch params
 bool hold_course    # Set true to tune course params
 bool hold_altitude  # Set true to tune altitude params
 bool hold_vh        # Set true to tune vertical velocity params
+bool hold_va        # Set true to tune total speed
