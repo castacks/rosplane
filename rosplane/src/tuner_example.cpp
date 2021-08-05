@@ -27,6 +27,9 @@ void tuner_example::control(const params_s &params, const input_s &input, output
     output.phi_c = course_hold(input.chi_c, input.chi, input.phi_ff, input.r, params, input.Ts);
     output.delta_a =  roll_hold(output.phi_c, input.phi, input.p, params, input.Ts);
   }
+  if(input.hold_va) {
+    output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
+  }
   if(input.hold_altitude) {
     ROS_INFO("ALTITUDE HOLD");
     output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);

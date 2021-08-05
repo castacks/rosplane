@@ -62,6 +62,7 @@ protected:
     bool hold_course;
     bool hold_altitude;
     bool hold_vh;
+    bool hold_va;
   };
 
   struct output_s

@@ -176,6 +176,7 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
   input.hold_course =  tuner_commands_.hold_course;
   input.hold_altitude = tuner_commands_.hold_altitude;
   input.hold_vh = tuner_commands_.hold_vh;
+  input.hold_va = tuner_commands_.hold_va;
 
   struct output_s output;
   output.phi_c = tuner_commands_.phi_c;
@@ -206,6 +207,7 @@ void tuner_base::actuator_controls_publish(const ros::TimerEvent &)
     commanded_values_.h_c = -input.h_c;                 // Easier to understand since position is in NED
     commanded_values_.chi_c = tuner_commands_.chi_c;
     commanded_values_.vh_c = tuner_commands_.vh_c;
+    commanded_values_.Va_c = tuner_commands_.Va_c;
     // commanded_values_.psi_c = output.psi_c;
     // commanded_values_.chi_0 = chi_0;
 
