@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <rosplane_msgs/Waypoint.h>
 
-#define num_waypoints 4
+#define num_waypoints 5
 float CHI_0 = -1.889;
 
 void RotZ(float chi_0, float &pn, float &pe, float &chi) {
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
     -2162, -5604, -200, -80*M_PI/180 + CHI_0, Va,
     -6626, -4134.81, -200, -170*M_PI/180 + CHI_0, Va,
     -2871, 7263, -200, 100*M_PI/180 + CHI_0, Va,
-    1877, 5698, -200, 10*M_PI/180 + CHI_0, Va
-    // 0,     0,  -100, 0*M_PI/180 + CHI_0, 50
+    1877, 5698, -200, 10*M_PI/180 + CHI_0, Va,
+    0,     0,  -5, 0*M_PI/180 + CHI_0, 20.0
   };
 
   // course heading is in NED frame
