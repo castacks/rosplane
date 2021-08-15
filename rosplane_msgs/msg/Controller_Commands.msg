@@ -7,3 +7,5 @@ float32 chi_c		# Commanded course (rad)
 float32 phi_ff		# feed forward command for orbits (rad)
 float32[4] aux		# Optional auxiliary commands
 bool aux_valid		# Auxiliary commands valid
+float32 vh_c        # vertical velocity in fpm
+bool land
