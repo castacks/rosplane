@@ -179,8 +179,12 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
   ROS_INFO("Manage Dubins");
   Eigen::Vector3f p;
   p << input.pn, input.pe, -input.h;
-
-  output.Va_d = waypoints_[idx_a_].Va_d;
+  ROS_INFO("%d, velocity : %f", (idx_a_+1)%num_waypoints_, waypoints_[(idx_a_+1)%num_waypoints_].Va_d);
+  // for(int i=0; i<num_waypoints_; i++) {
+  //   ROS_INFO("%f, %f, %f", waypoints_[i].w[0], waypoints_[i].w[1], waypoints_[i].w[2]);
+  // }
+  // ROS_INFO("---------------------");
+  output.Va_d = waypoints_[(idx_a_+1)%num_waypoints_].Va_d;
   output.r[0] = 0;
   output.r[1] = 0;
   output.r[2] = 0;
@@ -319,7 +323,13 @@ void path_manager_example::manage_dubins(const params_s &params, const input_s &
     }
     break;
   }
-  ROS_INFO("Manage Dubins End : %d", idx_a_);
+
+  // switch to landing mode if target height is less than 10 m
+  if(waypoints_[(idx_a_+1)%num_waypoints_].w[2] > -10) {
+    landing_ = true;
+    ROS_INFO("PATH MANAGER : GOING INTO LANDING MODE");
+  }
+  // ROS_INFO("Manage Dubins End : %d", idx_a_);
 }
 
 Eigen::Matrix3f path_manager_example::rotz(float theta)

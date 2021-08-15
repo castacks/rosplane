@@ -24,6 +24,8 @@ path_manager_base::path_manager_base():
   num_waypoints_ = 0;
 
   state_init_ = false;
+
+  landing_ = false;
 }
 
 void path_manager_base::vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg)
@@ -43,6 +45,7 @@ void path_manager_base::vehicle_state_callback(const rosplane_msgs::StateConstPt
 
 void path_manager_base::new_waypoint_callback(const rosplane_msgs::Waypoint &msg)
 {
+  // ROS_INFO("RECEIVED POINT %d , WITH VELOCITY %f",num_waypoints_, msg.Va_d);
   if (msg.clear_wp_list == true)
   {
     waypoints_.clear();
@@ -74,7 +77,7 @@ void path_manager_base::new_waypoint_callback(const rosplane_msgs::Waypoint &msg
   nextwp.Va_d         = msg.Va_d;
   waypoints_.push_back(nextwp);
   num_waypoints_++;
-  ROS_INFO("Received waypoint : %d", num_waypoints_);
+  // ROS_INFO("Received waypoint : %d", num_waypoints_);
 }
 
 void path_manager_base::current_path_publish(const ros::TimerEvent &)
@@ -106,11 +109,13 @@ void path_manager_base::current_path_publish(const ros::TimerEvent &)
     current_path.q[i] = output.q[i];
     current_path.c[i] = output.c[i];
   }
+  // ROS_INFO("HEIGHT %f", output.c[2]);
   current_path.rho = output.rho;
   current_path.lambda = output.lambda;
+  current_path.land = landing_;
 
   current_path_pub_.publish(current_path);
-  ROS_INFO("Path Manager : published current path");
+  // ROS_INFO("Path Manager : published current path");
 }
 
 } //end namespace
