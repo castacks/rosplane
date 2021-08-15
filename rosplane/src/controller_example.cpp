@@ -1,5 +1,6 @@
 #include "controller_example.h"
 
+
 namespace rosplane
 {
 
@@ -21,6 +22,10 @@ controller_example::controller_example() : controller_base()
   t_error_ = 0;
   t_integrator_ = 0;
 
+  vh_differentiator_ = 0;
+  vh_error_ = 0;
+  vh_integrator_ = 0;
+
   throttle_ramp_ = 0.0; // only for the purpose of takeoff
 }
 
@@ -33,6 +38,10 @@ void controller_example::control(const params_s &params, const input_s &input, o
   float e_py = -sinf(input.psi - chi_0) * sqrt(input.pn*input.pn + input.pe*input.pe);
   float psi_c = input.psi - params.chi_infi * 2/M_PI_F * atanf(params.k_path * e_py);
   output.psi_c = chi_0;
+
+  if(input.land) {
+    current_zone = alt_zones::LAND;
+  }
 
   switch (current_zone)
   {
@@ -63,6 +72,11 @@ void controller_example::control(const params_s &params, const input_s &input, o
       ap_error_ = 0;
       ap_integrator_ = 0;
       ap_differentiator_ = 0;
+      if(params.ai_mode) {
+        accept_ai_commands_ = true;
+        current_zone = alt_zones::AI_MODE;
+        ROS_INFO("GOING TO AI MODE");
+      }
     }
     break;
   case alt_zones::CLIMB:
@@ -123,6 +137,17 @@ void controller_example::control(const params_s &params, const input_s &input, o
       ap_differentiator_ = 0;
     }
     break;
+    
+  case alt_zones::LAND:
+    ROS_INFO("LANDING");
+    output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
+    output.theta_c = vertical_rate_hold(input.vh_c, input.vh, params, input.Ts);
+    break;
+  
+  case alt_zones::AI_MODE:
+    output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
+    output.theta_c = vertical_rate_hold(input.vh_c, input.vh, params, input.Ts);
+    output.delta_a = roll_hold(input.phi_c, input.phi, input.p, params, input.Ts);    // we use input.phi_c as commanded roll 
   default:
     break;
   }
@@ -315,6 +340,29 @@ float controller_example::takeoff_path_hold(float psi_c, float psi, float r, con
 
   t_error_ = error;
   return delta_r;
+}
+
+float controller_example::vertical_rate_hold(float vh_c, float vh, const params_s &params, float Ts)
+{
+  float error = vh_c - vh;
+
+  vh_integrator_ = vh_integrator_ + (Ts/2.0)*(error + vh_error_);
+  vh_differentiator_ = (2.0*params.tau - Ts)/(2.0*params.tau + Ts)*vh_differentiator_ + (2.0 /
+                       (2.0*params.tau + Ts))*(error - vh_error_);
+
+  float up = params.vh_kp*error;
+  float ui = params.vh_ki*vh_integrator_;
+  float ud = params.vh_kd*vh_differentiator_;
+
+  float theta_c = sat( up + ui + ud, 10.0*3.14/180, -10.0*3.14/180);
+  if (fabs(params.vh_ki) >= 0.00001)
+  {
+    float theta_c_unsat =  up + ui + ud;
+    vh_integrator_ = vh_integrator_ + (Ts/params.vh_ki)*(theta_c - theta_c_unsat);
+  }
+
+  vh_error_ = error;
+  return theta_c;
 }
 
 float controller_example::sat(float value, float up_limit, float low_limit)
