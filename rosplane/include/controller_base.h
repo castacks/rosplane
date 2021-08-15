@@ -30,7 +30,9 @@ enum class alt_zones
   TAKE_OFF,
   CLIMB,
   DESCEND,
-  ALTITUDE_HOLD
+  ALTITUDE_HOLD, 
+  LAND,
+  AI_MODE
 };
 
 class controller_base
@@ -40,6 +42,7 @@ public:
   float spin();
 
 protected:
+  bool accept_ai_commands_; // bool to switch between rosplane takeoff -> ai mode -> landing mode (To be implemented)
 
   struct input_s
   {
@@ -61,6 +64,10 @@ protected:
     float psi;              /** Want to follow correct heading during takeoff */
     float pn;               /* pn and pe will be handy for calculating crosstrack error during takeoff */
     float pe;
+    float vh_c;             /*commanded vertical velocity (up is +ve) */
+    float vh;               /** vertical velocity ; up is positive*/
+    float phi_c;            /** commanded roll value used during AI mode*/
+    bool land;              /* go into landing maneuver */
   };
 
   struct output_s
@@ -119,6 +126,10 @@ protected:
     double pwm_rad_e;
     double pwm_rad_a;
     double pwm_rad_r;
+    double vh_kp; // PID params for vertical velocity 
+    double vh_kd; // PID params for vertical velocity
+    double vh_ki; // PID paramns for certical velocity
+    bool ai_mode; // True if we want to switch to AI after takeoff
   };
 
   virtual void control(const struct params_s &params, const struct input_s &input, struct output_s &output) = 0;
@@ -130,6 +141,7 @@ private:
   ros::NodeHandle nh_private_;
   ros::Subscriber vehicle_state_sub_;
   ros::Subscriber controller_commands_sub_;
+  ros::Subscriber ai_controller_commands_sub_;
   ros::Publisher actuators_pub_;
   ros::Publisher internals_pub_;
   ros::Timer act_pub_timer_;
@@ -142,6 +154,7 @@ private:
 
   void vehicle_state_callback(const rosplane_msgs::StateConstPtr &msg);
   void controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg);
+  void ai_controller_commands_callback(const rosplane_msgs::Controller_CommandsConstPtr &msg);
   bool command_recieved_;
   int angle_in_deg_; // 1 means angle will be in degrees and thus we would need to add a codeblock in callcack to convert angles
 
