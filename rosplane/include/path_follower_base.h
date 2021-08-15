@@ -39,7 +39,9 @@ protected:
     float pe;               /** position east */
     float h;                /** altitude */
     float Va;               /** airspeed */
+    float Vg;               /** groundspeed */
     float chi;              /** course angle */
+    bool land;              /** Start following line along runway for landing */
   };
 
   struct output_s
@@ -48,6 +50,8 @@ protected:
     double h_c;              /** commanded altitude (m) */
     double chi_c;            /** commanded course (rad) */
     double phi_ff;           /** feed forward term for orbits (rad) */
+    double vh;               /** vertical velocity (fpm) */
+    bool land;               /** start the descent portion of landing sequence once we're in the 10 degree triangle, i.e tan(10) = height/ dist to runway */
   };
 
   struct params_s
@@ -55,6 +59,7 @@ protected:
     double chi_infty;
     double k_path;
     double k_orbit;
+    double chi_0;
   };
 
   virtual void follow(const struct params_s &params, const struct input_s &input, struct output_s &output) = 0;

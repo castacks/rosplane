@@ -3,6 +3,7 @@
 
 #define M_PI_F 3.14159265358979323846f
 float DEG_2_RAD = M_PI_F/180.0;
+float MS_TO_FPM = 60.0/0.305;
 
 namespace rosplane
 {
@@ -20,6 +21,8 @@ path_follower_base::path_follower_base():
   nh_private_.param<double>("K_PATH", params_.k_path, 0.01);
   nh_private_.param<double>("K_ORBIT", params_.k_orbit, 0.9);
   nh_private_.param<int>("ANGLE_IN_DEG", angle_in_deg_, 1);
+  nh_private_.param<double>("RUNWAY_ANGLE", params_.chi_0, -1.88733);      // paramete to align plane along runway for landing
+  // -108.136535645
 
   func_ = boost::bind(&path_follower_base::reconfigure_callback, this, _1, _2);
   server_.setCallback(func_);
@@ -29,6 +32,7 @@ path_follower_base::path_follower_base():
 
   state_init_ = false;
   current_path_init_ = false;
+  input_.land = false;
 }
 
 void path_follower_base::update(const ros::TimerEvent &)
@@ -44,12 +48,13 @@ void path_follower_base::update(const ros::TimerEvent &)
     msg.Va_c = output.Va_c;
     msg.h_c = output.h_c;
     msg.phi_ff = output.phi_ff;
-
+    msg.vh_c  = output.vh*MS_TO_FPM; // convert vertical velocity to fpm
+    msg.land = output.land;          // descent sequence starts only when we're in the 10 degree triangle; till then we stay in the ALTITUDE HOLD region
     if(angle_in_deg_) {
       msg.chi_c = msg.chi_c * 1/DEG_2_RAD;
     }
     controller_commands_pub_.publish(msg);
-    ROS_INFO("Path Follower : Publishing controller commands");
+    // ROS_INFO("Path Follower : Publishing controller commands");
   }
 }
 
@@ -60,6 +65,7 @@ void path_follower_base::vehicle_state_callback(const rosplane_msgs::StateConstP
   input_.h = -msg->position[2];                /** altitude */
   input_.chi = msg->chi;
   input_.Va = msg->Va;
+  input_.Vg = msg->Vg;
   if(angle_in_deg_) {
     input_.chi = input_.chi * DEG_2_RAD;
   }
@@ -83,6 +89,9 @@ void path_follower_base::current_path_callback(const rosplane_msgs::Current_Path
   input_.rho_orbit = msg->rho;
   input_.lam_orbit = msg->lambda;
   current_path_init_ = true;
+  if(msg->land) {
+    input_.land = true;
+  }
 }
 
 void path_follower_base::reconfigure_callback(rosplane::FollowerConfig &config, uint32_t level)
