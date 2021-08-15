@@ -50,6 +50,11 @@ private:
   float t_error_;
   float t_integrator_;
 
+  float vertical_rate_hold(float vh_c, float vh, const struct params_s &params, float Ts);
+  float vh_error_;
+  float vh_integrator_;
+  float vh_differentiator_;
+
   float sat(float value, float up_limit, float low_limit);
   float throttle_ramp_;
 };
