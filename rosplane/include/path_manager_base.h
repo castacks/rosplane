@@ -42,6 +42,7 @@ protected:
   std::vector<waypoint_s> waypoints_;
   int num_waypoints_;
   int idx_a_;                 /** index to the waypoint that was most recently achieved */
+  bool landing_;               /** False initially, True once (idx_a_+1)th point is for landing */
 
   struct input_s
   {
