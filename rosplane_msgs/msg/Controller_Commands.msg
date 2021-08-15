@@ -8,4 +8,5 @@ float32 phi_ff		# feed forward command for orbits (rad)
 float32[4] aux		# Optional auxiliary commands
 bool aux_valid		# Auxiliary commands valid
 float32 vh_c        # vertical velocity in fpm
+float32 phi_c       # roll angle/bank angle for working with trajectory library
 bool land
