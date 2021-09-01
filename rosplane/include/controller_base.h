@@ -31,8 +31,8 @@ enum class alt_zones
   CLIMB,
   DESCEND,
   ALTITUDE_HOLD, 
-  LAND,
-  AI_MODE
+  LAND,                  // LAND mode makes use of the vertical_rate() for a constant rate of descent close to runway
+  AI_MODE                // AI_MODE : General control loop to execute commands by other networks
 };
 
 class controller_base

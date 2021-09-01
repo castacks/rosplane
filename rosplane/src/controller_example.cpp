@@ -145,6 +145,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     break;
   
   case alt_zones::AI_MODE:
+    // If you want to test your own Learning agent, it's probably best to make changes in here 
     output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
     output.theta_c = vertical_rate_hold(input.vh_c, input.vh, params, input.Ts);
     output.delta_a = roll_hold(input.phi_c, input.phi, input.p, params, input.Ts);    // we use input.phi_c as commanded roll 

@@ -106,9 +106,9 @@ void controller_base::controller_commands_callback(const rosplane_msgs::Controll
   if(!accept_ai_commands_) {
     controller_commands_ = *msg;
     ROS_INFO("Accepting rosplane commands");
-  }
-  if(angle_in_deg_) {
-    controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
+    if(angle_in_deg_) {
+      controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
+    }
   }
   // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
@@ -118,10 +118,10 @@ void controller_base::ai_controller_commands_callback(const rosplane_msgs::Contr
   command_recieved_ = true;
   if(accept_ai_commands_) {
     controller_commands_ = *msg;
-  }
-  if(angle_in_deg_) {
-    controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
-    controller_commands_.phi_c = controller_commands_.phi_c * DEG_2_RAD;
+    if(angle_in_deg_) {
+      controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
+      controller_commands_.phi_c = controller_commands_.phi_c * DEG_2_RAD;
+    }
   }
   // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
@@ -206,6 +206,9 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
 
   if(input.land) {
     ROS_INFO("CONTROLLER : LANDING MODE");
+    // Make the roll controller aggressive once we start the descent
+    params_.r_kp = 2.5;
+    params_.r_kd = -0.9;
   }
   else {
     ROS_INFO("CONTROLLER : NOT LANDING MODE");
