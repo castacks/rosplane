@@ -6,6 +6,7 @@ namespace rosplane
 
 path_follower_example::path_follower_example()
 {
+  alpha = 0;
 }
 
 void path_follower_example::follow(const params_s &params, const input_s &input, output_s &output)
@@ -68,37 +69,43 @@ void path_follower_example::follow(const params_s &params, const input_s &input,
     float rn = -20000.0 * cosf(chi_q);
     float re = -20000.0 * sinf(chi_q);
     float path_error = -sinf(chi_q)*((input.pn - rn)) + cosf(chi_q)*((input.pe - re));
-    float dist_to_runway = sqrt(powf((input.pn - 0), 2) + powf((input.pe-0),2));
+    float dist_to_runway = sqrt(powf((input.pn - 50*cosf(chi_q)), 2) + powf((input.pe- 50*sinf(chi_q)),2));
     // heading command
     if(dist_to_runway<1500) {
       k_path = 0.005;
     }
-    output.chi_c = chi_q - params.chi_infty*2/M_PI*atanf(k_path*path_error);
+
     
     float t = (dist_to_runway + 0.00001)/input.Vg;
     // output.vh = std::max(-(input.h)/t, (float)-0.5); // max descend rate should be 1 m/s == 196 fpm
     output.vh = -input.h/t;
+    output.Va_c  = 35;
 
     ROS_INFO("Path error : %f", path_error);
     if(dist_to_runway < input.h/tanf(5*M_PI/180.0)) {
       output.land = true;
-      ROS_INFO("FOLLOWER : GOING INTO LANDING");
+      k_path = 0.0025;
+      output.Va_c = 25;
+      alpha = std::min(1.0, alpha+0.001);
+      output.vh = alpha*output.vh;
+      ROS_INFO("FOLLOWER : GOING INTO LANDING, %f", alpha);
     }
 
     if(dist_to_runway < 1000) {
-      output.Va_c = 30.0;
-    }
-    else {
-      output.Va_c  = 40;
+      output.Va_c = 0;
     }
 
     if(input.h < 30) {
-      output.Va_c = 0.0;
+      output.Va_c = 0;
     }
-    if(input.h < 50) {
-      output.vh = std::max((float)-30.0, (float)output.vh);
-    }
+    // if(input.h < 50) {
+    //   output.vh = std::max((float)-100.0, (float)output.vh);
+    // }
+    // if(dist_to_runway < 300) {
+    //   output.vh = -2;  // m/s
+    // }
 
+    output.chi_c = chi_q - params.chi_infty*2/M_PI*atanf(k_path*path_error);
   }
 }
 
