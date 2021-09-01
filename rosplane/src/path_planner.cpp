@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     -6626, -4134.81, -200, -170*M_PI/180 + CHI_0, Va,
     -2871, 7263, -200, 100*M_PI/180 + CHI_0, Va,
     1877, 5698, -200, 10*M_PI/180 + CHI_0, Va,
-    0,     0,  -5, 0*M_PI/180 + CHI_0, 20.0
+    -15,     -45,  -5, 0*M_PI/180 + CHI_0, 20.0
   };
 
   // course heading is in NED frame
