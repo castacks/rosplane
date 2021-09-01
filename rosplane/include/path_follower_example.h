@@ -10,6 +10,7 @@ class path_follower_example : public path_follower_base
 {
 public:
   path_follower_example();
+  double alpha;
 private:
   virtual void follow(const struct params_s &params, const struct input_s &input, struct output_s &output);
 };
