@@ -79,10 +79,10 @@ void path_follower_example::follow(const params_s &params, const input_s &input,
     float t = (dist_to_runway + 0.00001)/input.Vg;
     // output.vh = std::max(-(input.h)/t, (float)-0.5); // max descend rate should be 1 m/s == 196 fpm
     output.vh = -input.h/t;
-    output.Va_c  = 35;
+    output.Va_c  = 30;
 
     ROS_INFO("Path error : %f", path_error);
-    if(dist_to_runway < input.h/tanf(5*M_PI/180.0)) {
+    if(dist_to_runway < input.h/tanf(4.5*M_PI/180.0)) {
       output.land = true;
       k_path = 0.0025;
       output.Va_c = 25;
@@ -92,10 +92,10 @@ void path_follower_example::follow(const params_s &params, const input_s &input,
     }
 
     if(dist_to_runway < 1000) {
-      output.Va_c = 0;
+      output.Va_c = 25;
     }
 
-    if(input.h < 30) {
+    if(input.h < 10) {
       output.Va_c = 0;
     }
     // if(input.h < 50) {
