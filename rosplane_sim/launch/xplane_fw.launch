@@ -20,7 +20,7 @@
   
     <group ns="$(arg mav_name)">
       <!-- Load Global Parameters for this MAV -->
-      <rosparam command="load" file="$(find rosplane_sim)/params/cessna_skyhawk.yaml"/>
+      <rosparam command="load" ns="autopilot" file="$(find rosplane_sim)/params/cessna_skyhawk.yaml"/>
   
       <node name="autopilot" pkg="rosplane" type="rosplane_controller" output="screen" >
         <remap from="state" to="xplane/state"/>
