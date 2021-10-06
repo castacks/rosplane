@@ -43,6 +43,14 @@ void controller_example::control(const params_s &params, const input_s &input, o
     current_zone = alt_zones::LAND;
   }
 
+  // Use this if code block if spawning in air 
+  if(params.ai_mode) {
+    accept_ai_commands_ = true;
+    current_zone = alt_zones::AI_MODE;
+        
+    // ROS_INFO("GOING TO AI MODE");
+  } 
+
   switch (current_zone)
   {
   case alt_zones::TAKE_OFF:
@@ -63,7 +71,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     if(input.va < 25) output.theta_c = 0.0 * 3.14/180.0; // takeoff only when speed is good
 
     output.delta_r = takeoff_path_hold(output.psi_c, input.psi, input.r, params, input.Ts);
-    ROS_INFO("TAKING OFF %f, %f", output.delta_r, output.theta_c);
+    // ROS_INFO("TAKING OFF %f, %f", output.delta_r, output.theta_c);
 
     if (input.h >= params.alt_toz)
     {
@@ -85,7 +93,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     output.theta_c = airspeed_with_pitch_hold(input.Va_c, input.va, params, input.Ts);
     if (input.h >= input.h_c - params.alt_hz)
     {
-      ROS_DEBUG("hold");
+      // ROS_DEBUG("hold");
       current_zone = alt_zones::ALTITUDE_HOLD;
       at_error_ = 0;
       at_integrator_ = 0;
@@ -96,17 +104,17 @@ void controller_example::control(const params_s &params, const input_s &input, o
     }
     else if (input.h <= params.alt_toz)
     {
-      ROS_DEBUG("takeoff");
+      // ROS_DEBUG("takeoff");
       current_zone = alt_zones::TAKE_OFF;
     }
     break;
   case alt_zones::DESCEND:
-    ROS_INFO("DESCEND");
+    // ROS_INFO("DESCEND");
     output.delta_t = 0;
     output.theta_c = airspeed_with_pitch_hold(input.Va_c, input.va, params, input.Ts);
     if (input.h <= input.h_c + params.alt_hz)
     {
-      ROS_DEBUG("hold");
+      // ROS_DEBUG("hold");
       current_zone = alt_zones::ALTITUDE_HOLD;
       at_error_ = 0;
       at_integrator_ = 0;
@@ -122,7 +130,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     output.theta_c = altitiude_hold(input.h_c, input.h, params, input.Ts);
     if (input.h >= input.h_c + params.alt_hz)
     {
-      ROS_DEBUG("desend");
+      // ROS_DEBUG("desend");
       current_zone = alt_zones::DESCEND;
       ap_error_ = 0;
       ap_integrator_ = 0;
@@ -130,7 +138,7 @@ void controller_example::control(const params_s &params, const input_s &input, o
     }
     else if (input.h <= input.h_c - params.alt_hz)
     {
-      ROS_DEBUG("climb");
+      // ROS_DEBUG("climb");
       current_zone = alt_zones::CLIMB;
       ap_error_ = 0;
       ap_integrator_ = 0;
@@ -149,6 +157,8 @@ void controller_example::control(const params_s &params, const input_s &input, o
     output.delta_t = airspeed_with_throttle_hold(input.Va_c, input.va, params, input.Ts);
     output.theta_c = vertical_rate_hold(input.vh_c, input.vh, params, input.Ts);
     output.delta_a = roll_hold(input.phi_c, input.phi, input.p, params, input.Ts);    // we use input.phi_c as commanded roll 
+    break;
+
   default:
     break;
   }
@@ -238,7 +248,6 @@ float controller_example::airspeed_with_pitch_hold(float Va_c, float Va, const p
     float theta_c_unsat = up + ui + ud;
     ap_integrator_ = ap_integrator_ + (Ts/params.a_p_ki)*(theta_c - theta_c_unsat);
   }
-
   ap_error_ = error;
   return theta_c;
 }
@@ -254,14 +263,16 @@ float controller_example::airspeed_with_throttle_hold(float Va_c, float Va, cons
   float up = params.a_t_kp*error;
   float ui = params.a_t_ki*at_integrator_;
   float ud = params.a_t_kd*at_differentiator_;
+  float uff = params.a_t_ff*Va_c; // add feedforward term
 
-  float delta_t = sat(params.trim_t + up + ui + ud, params.max_t, 0);
+  float delta_t = sat(params.trim_t + up + ui + ud + uff, params.max_t, 0);
   if (fabs(params.a_t_ki) >= 0.00001)
   {
-    float delta_t_unsat = params.trim_t + up + ui + ud;
+    float delta_t_unsat = params.trim_t + up + ui + ud + uff;
     at_integrator_ = at_integrator_ + (Ts/params.a_t_ki)*(delta_t - delta_t_unsat);
   }
 
+  ROS_INFO("Airspeed with throttle : %f, %f, %f, %f", params.a_t_kp, params.a_t_ki, params.a_t_kd, params.a_t_ff );
   at_error_ = error;
   return delta_t;
 }
@@ -331,7 +342,7 @@ float controller_example::takeoff_path_hold(float psi_c, float psi, float r, con
   float up = params.t_kp*error;
   float ui = params.t_ki*t_integrator_;
   float ud = params.t_kd*r;
-  ROS_INFO("%f", params.t_r_ff);
+  // ROS_INFO("%f", params.t_r_ff);
   float delta_r = sat(up + ui + ud + params.t_r_ff, params.max_r, -params.max_r);
   if (fabs(params.t_ki) >= 0.00001)
   {
