@@ -24,7 +24,7 @@ controller_base::controller_base():
   nh_private_.param<double>("TRIM_E", params_.trim_e, 0.0);
   nh_private_.param<double>("TRIM_A", params_.trim_a, 0.0);
   nh_private_.param<double>("TRIM_R", params_.trim_r, 0.0);
-  nh_private_.param<double>("TRIM_T", params_.trim_t, 0.6);
+  nh_private_.param<double>("TRIM_T", params_.trim_t, 0.0);
   nh_private_.param<double>("PWM_RAD_E", params_.pwm_rad_e, 1.0);
   nh_private_.param<double>("PWM_RAD_A", params_.pwm_rad_a, 1.0);
   nh_private_.param<double>("PWM_RAD_R", params_.pwm_rad_r, 1.0);
@@ -44,9 +44,10 @@ controller_base::controller_base():
   nh_private_.param<double>("AS_PITCH_KP", params_.a_p_kp, 0.05);
   nh_private_.param<double>("AS_PITCH_KD", params_.a_p_kd, -0.07);
   nh_private_.param<double>("AS_PITCH_KI", params_.a_p_ki, 0.0);
-  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 1.5);
-  nh_private_.param<double>("AS_THR_KD", params_.a_t_kd, 0.0);
-  nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.2);
+  nh_private_.param<double>("AS_THR_KP", params_.a_t_kp, 0.2);
+  nh_private_.param<double>("AS_THR_KD", params_.a_t_kd, -0.01);
+  nh_private_.param<double>("AS_THR_KI", params_.a_t_ki, 0.02);
+  nh_private_.param<double>("AS_THR_FF", params_.a_t_ff, 0.05);
   nh_private_.param<double>("ALT_KP", params_.a_kp, 0.03);
   nh_private_.param<double>("ALT_KD", params_.a_kd, -0.00005);
   nh_private_.param<double>("ALT_KI", params_.a_ki, 0.003);
@@ -70,8 +71,8 @@ controller_base::controller_base():
   nh_private_.param<double>("VH_KI", params_.vh_ki, 0.0);
 
   nh_private_.param<int>("ANGLE_IN_DEG", angle_in_deg_, 1);
-  nh_private_.param<bool>("AI_MODE", params_.ai_mode, false);        // switches to AI mode after TAKEOFF -> Controller Commands will be taken from AI and not path manager or path follower
-  ROS_INFO("angle_in_deg_ %d", angle_in_deg_);
+  nh_private_.param<int>("AI_MODE", params_.ai_mode, 1);        // switches to AI mode after TAKEOFF -> Controller Commands will be taken from AI and not path manager or path follower
+  // ROS_INFO("ai_mode %d", params_.ai_mode);
 
   func_ = boost::bind(&controller_base::reconfigure_callback, this, _1, _2);
   server_.setCallback(func_);
@@ -105,10 +106,10 @@ void controller_base::controller_commands_callback(const rosplane_msgs::Controll
   command_recieved_ = true;
   if(!accept_ai_commands_) {
     controller_commands_ = *msg;
-    ROS_INFO("Accepting rosplane commands");
-    if(angle_in_deg_) {
-      controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
-    }
+    // ROS_INFO("Accepting rosplane commands");
+  }
+  if(angle_in_deg_) {
+    controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
   }
   // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
@@ -117,11 +118,12 @@ void controller_base::ai_controller_commands_callback(const rosplane_msgs::Contr
 {
   command_recieved_ = true;
   if(accept_ai_commands_) {
+    ROS_INFO("Accepting AI commands %d",accept_ai_commands_);
     controller_commands_ = *msg;
-    if(angle_in_deg_) {
-      controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
-      controller_commands_.phi_c = controller_commands_.phi_c * DEG_2_RAD;
-    }
+  }
+  if(angle_in_deg_) {
+    controller_commands_.chi_c = controller_commands_.chi_c * DEG_2_RAD;
+    // controller_commands_.phi_c = controller_commands_.phi_c * DEG_2_RAD;
   }
   // ROS_INFO("Recieved Controller Commands : chi_c %f", controller_commands_.chi_c);
 }
@@ -153,6 +155,7 @@ void controller_base::reconfigure_callback(rosplane::ControllerConfig &config, u
   params_.a_t_kp = config.AS_THR_KP;
   params_.a_t_kd = config.AS_THR_KD;
   params_.a_t_ki = config.AS_THR_KI;
+  params_.a_t_ff = config.AS_THR_FF;
 
   params_.a_kp = config.ALT_KP;
   params_.a_kd = config.ALT_KD;
@@ -201,17 +204,22 @@ void controller_base::actuator_controls_publish(const ros::TimerEvent &)
   input.Ts = 0.01f;
   input.beta = vehicle_state_.beta;
   input.vh_c = controller_commands_.vh_c / MS_TO_FPM;
+ 
   input.vh = vehicle_state_.vh / MS_TO_FPM;        // fpm to m/s
   input.land = controller_commands_.land;
 
+  if (accept_ai_commands_){
+    input.phi_c = controller_commands_.phi_c;
+  }
+
   if(input.land) {
     ROS_INFO("CONTROLLER : LANDING MODE");
-    // Make the roll controller aggressive once we start the descent
+    // Make roll hold more agressive for landing
     params_.r_kp = 2.5;
-    params_.r_kd = -0.9;
+    params_.r_kd = -0.9; 
   }
   else {
-    ROS_INFO("CONTROLLER : NOT LANDING MODE");
+    // ROS_INFO("CONTROLLER : NOT LANDING MODE");
   }
 
   // Values required for proper takeoff; pn and pe can be used for cross-track error
