@@ -105,6 +105,7 @@ protected:
     double a_t_kp;
     double a_t_kd;
     double a_t_ki;
+    double a_t_ff;   // feedforward term for airspeed hold with throttle
     double a_kp;
     double a_kd;
     double a_ki;
@@ -129,7 +130,7 @@ protected:
     double vh_kp; // PID params for vertical velocity 
     double vh_kd; // PID params for vertical velocity
     double vh_ki; // PID paramns for certical velocity
-    bool ai_mode; // True if we want to switch to AI after takeoff
+    int ai_mode; // True if we want to switch to AI after takeoff
   };
 
   virtual void control(const struct params_s &params, const struct input_s &input, struct output_s &output) = 0;
